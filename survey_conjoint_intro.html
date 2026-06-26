@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>调查实验与联合实验：背后的原理</title>
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#64748b;
+    --line:#e5e7eb;
+    --blue:#2563eb;
+    --blue2:#dbeafe;
+    --green:#16a34a;
+    --green2:#dcfce7;
+    --orange:#f97316;
+    --orange2:#ffedd5;
+    --purple:#7c3aed;
+    --purple2:#ede9fe;
+    --red:#dc2626;
+    --shadow:0 10px 30px rgba(15,23,42,.08);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+    color:var(--text);
+    background:linear-gradient(180deg,#eef4ff 0%, var(--bg) 280px);
+    line-height:1.75;
+  }
+  header{
+    padding:52px 22px 26px;
+    text-align:center;
+  }
+  .kicker{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:999px;
+    background:rgba(37,99,235,.1);
+    color:var(--blue);
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  h1{
+    margin:0 auto 14px;
+    max-width:920px;
+    font-size:clamp(30px,5vw,54px);
+    line-height:1.12;
+    letter-spacing:-.04em;
+  }
+  .subtitle{
+    max-width:860px;
+    margin:0 auto;
+    color:var(--muted);
+    font-size:18px;
+  }
+  main{
+    width:min(1120px,92vw);
+    margin:0 auto 80px;
+  }
+  nav{
+    position:sticky;
+    top:0;
+    z-index:10;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+    background:rgba(246,248,251,.9);
+    backdrop-filter:blur(14px);
+    padding:12px 0;
+    border-bottom:1px solid rgba(226,232,240,.7);
+    margin-bottom:20px;
+  }
+  nav a{
+    color:#334155;
+    text-decoration:none;
+    padding:8px 12px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:#fff;
+    font-size:14px;
+  }
+  nav a:hover{border-color:var(--blue);color:var(--blue)}
+  section.card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:28px;
+    margin:22px 0;
+  }
+  h2{
+    margin:0 0 14px;
+    font-size:28px;
+    line-height:1.25;
+    letter-spacing:-.02em;
+  }
+  h3{
+    margin:22px 0 8px;
+    font-size:20px;
+  }
+  p{margin:10px 0;color:#334155}
+  .lead{
+    font-size:18px;
+    color:#1f2937;
+    font-weight:600;
+  }
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+  .mini{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    background:#fbfdff;
+  }
+  .mini strong{display:block;margin-bottom:6px;font-size:17px}
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:999px;
+    padding:4px 10px;
+    font-size:13px;
+    font-weight:700;
+    margin-right:6px;
+  }
+  .tag.blue{background:var(--blue2);color:var(--blue)}
+  .tag.green{background:var(--green2);color:var(--green)}
+  .tag.orange{background:var(--orange2);color:var(--orange)}
+  .tag.purple{background:var(--purple2);color:var(--purple)}
+  .formula{
+    background:#0f172a;
+    color:#e2e8f0;
+    border-radius:16px;
+    padding:18px 20px;
+    margin:18px 0;
+    overflow:auto;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+    line-height:1.65;
+  }
+  .note{
+    border-left:4px solid var(--blue);
+    background:#eff6ff;
+    padding:14px 16px;
+    border-radius:12px;
+    margin:16px 0;
+    color:#1e3a8a;
+  }
+  .warn{
+    border-left:4px solid var(--orange);
+    background:#fff7ed;
+    padding:14px 16px;
+    border-radius:12px;
+    margin:16px 0;
+    color:#7c2d12;
+  }
+  .diagram{
+    margin:20px 0 6px;
+    padding:22px;
+    background:linear-gradient(135deg,#ffffff,#f8fafc);
+    border:1px solid var(--line);
+    border-radius:18px;
+  }
+  .flow{
+    display:flex;
+    align-items:stretch;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .flow .box{
+    flex:1;
+    min-height:96px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:#fff;
+    padding:14px;
+  }
+  .arrow{
+    display:flex;
+    align-items:center;
+    color:#94a3b8;
+    font-size:28px;
+  }
+  .box .big{font-size:21px;font-weight:800;margin-bottom:4px}
+  .box .small{font-size:13px;color:var(--muted)}
+  .togglebar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 8px}
+  button{
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:#fff;
+    color:#334155;
+    border-radius:999px;
+    padding:9px 14px;
+    font-weight:700;
+  }
+  button.active,button:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+  .panel{
+    display:none;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    background:#fbfdff;
+    margin-top:8px;
+  }
+  .panel.active{display:block}
+  .sliderRow{display:grid;grid-template-columns:220px 1fr 78px;gap:12px;align-items:center;margin:12px 0}
+  input[type=range]{width:100%}
+  .resultBox{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin-top:16px;
+  }
+  .metric{
+    border-radius:16px;
+    padding:16px;
+    background:#f8fafc;
+    border:1px solid var(--line);
+    text-align:center;
+  }
+  .metric .num{font-size:28px;font-weight:900;color:var(--blue);line-height:1.2}
+  .metric .label{font-size:13px;color:var(--muted)}
+  .profileWrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .profile{
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px;
+    background:#fff;
+  }
+  .profile h4{margin:0 0 12px;font-size:20px}
+  .attr{display:flex;justify-content:space-between;border-top:1px dashed #e2e8f0;padding:8px 0;color:#334155}
+  .attr:first-of-type{border-top:0}
+  .attr span:first-child{color:#64748b}
+  .choiceBtns{display:flex;justify-content:center;gap:12px;margin-top:14px}
+  .choiceBtns button{border-radius:12px;padding:10px 18px}
+  .choiceBtns button.chooseA{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+  .choiceBtns button.chooseB{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+  .amceBar{
+    height:14px;
+    border-radius:999px;
+    background:#e2e8f0;
+    overflow:hidden;
+    margin:8px 0 4px;
+  }
+  .amceFill{height:100%;background:linear-gradient(90deg,var(--blue),#60a5fa);width:50%}
+  .compareTable{width:100%;border-collapse:separate;border-spacing:0;margin-top:16px;overflow:hidden;border-radius:16px;border:1px solid var(--line)}
+  .compareTable th,.compareTable td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  .compareTable th{background:#f8fafc;color:#0f172a}
+  .compareTable tr:last-child td{border-bottom:0}
+  details{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    background:#fff;
+    margin:10px 0;
+  }
+  summary{cursor:pointer;font-weight:800}
+  .quiz label{display:block;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff;cursor:pointer}
+  .quiz .feedback{font-weight:800;margin-top:10px}
+  footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0}
+  @media(max-width:820px){
+    .grid,.grid3,.profileWrap,.resultBox{grid-template-columns:1fr}
+    .flow{flex-direction:column}
+    .arrow{justify-content:center;transform:rotate(90deg)}
+    .sliderRow{grid-template-columns:1fr}
+  }
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+  <div class="kicker">方法讲义 · 因果识别与偏好测量</div>
+  <h1>调查实验与联合实验：背后的原理</h1>
+  <p class="subtitle">这份网页只讲一件事：在问卷里，如何通过随机化把“看到什么信息”或“面对什么方案”变成可识别的因果差异。</p>
+</header>
+<main>
+<nav>
+  <a href="#why">为什么需要实验</a>
+  <a href="#survey">调查实验</a>
+  <a href="#calc">ATE 计算器</a>
+  <a href="#conjoint">联合实验</a>
+  <a href="#compare">两者区别</a>
+  <a href="#risks">常见风险</a>
+  <a href="#quiz">自测</a>
+</nav>
+
+<section id="why" class="card">
+  <h2>一、为什么问卷里也能做实验</h2>
+  <p class="lead">调查实验的底层逻辑，是在问卷中随机改变受访者看到的信息、情境或方案，让不同组之间只在实验刺激上不同。</p>
+  <p>普通问卷通常只能观察相关关系，比如更信任政府的人是否更支持某项政策，但它很难判断究竟是信任导致支持，还是支持政策的人本来就更信任政府。实验的关键是随机分配。只要受访者被随机分到不同情境，各组在平均意义上就是可比的，那么不同组结果的差异就可以被解释为实验刺激带来的因果效应。</p>
+  <div class="diagram">
+    <div class="flow">
+      <div class="box"><div class="big">同一批受访者</div><div class="small">进入问卷</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="big">随机分组</div><div class="small">不是自己选择</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="big">看到不同刺激</div><div class="small">文本 / 图片 / 信息 / 方案</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="big">比较结果</div><div class="small">组间差异 = 实验效应</div></div>
+    </div>
+  </div>
+  <div class="note">实验的核心不是问卷，而是随机化。问卷只是承载实验刺激的场景，真正带来因果识别的是“随机分配”。</div>
+</section>
+
+<section id="survey" class="card">
+  <h2>二、调查实验：随机改变一个情境，看结果如何变化</h2>
+  <p class="lead">调查实验通常通过随机分配不同材料，识别某个信息、身份、制度安排或表达方式对态度和行为意向的影响。</p>
+  <p>比如研究 AI 是否影响公众对司法调解的接受度，可以让一组受访者看到“社区调解员提出方案”，另一组看到“AI 辅助生成调解方案”。两组受访者是随机分配的，因此除了看到的情境不同，其他个人特征在平均意义上应当相似。如果 AI 组的接受度更低，就可以把差异解释为 AI 介入的实验效应。</p>
+  <div class="grid3">
+    <div class="mini"><span class="tag blue">刺激</span><strong>操纵什么</strong><p>改变受访者看到的信息、身份、框架、政策描述或责任归因。</p></div>
+    <div class="mini"><span class="tag green">结果</span><strong>测量什么</strong><p>测量支持度、信任、接受度、公平感、风险感知或行为意向。</p></div>
+    <div class="mini"><span class="tag orange">因果</span><strong>识别什么</strong><p>比较不同随机组的平均结果差异，得到实验刺激的平均影响。</p></div>
+  </div>
+  <div class="formula">
+ATE = E[Y | 处理组] - E[Y | 对照组]
+
+含义：
+如果分组是随机的，那么两组平均结果差异可以解释为处理刺激造成的差异。
+  </div>
+  <h3>调查实验可以有很多形式</h3>
+  <p>最简单的是双组实验，也就是处理组和对照组。更复杂的是析因实验，比如 2×2 设计：AI / 无 AI 与 法官 / 社区调解员 同时随机化。这样不仅能看 AI 的主效应，也能看权威身份是否改变 AI 的影响。</p>
+  <div class="togglebar">
+    <button class="tab active" data-panel="p1">双组实验</button>
+    <button class="tab" data-panel="p2">2×2 析因实验</button>
+    <button class="tab" data-panel="p3">框架实验</button>
+  </div>
+  <div id="p1" class="panel active"><p><strong>双组实验</strong>最适合回答“某个刺激是否有效”。例如，一组看到普通政策说明，另一组看到带有风险提示的政策说明，然后比较政策支持度差异。</p></div>
+  <div id="p2" class="panel"><p><strong>2×2 析因实验</strong>适合回答“两个因素是否分别起作用，以及它们是否相互影响”。例如，AI/无AI 与 法官/调解员 形成四组，可以识别主效应和交互效应。</p></div>
+  <div id="p3" class="panel"><p><strong>框架实验</strong>适合研究同一事实用不同叙事表达时，公众态度是否改变。例如，将同一政策描述为“提升效率”或“保障公平”，观察支持度差异。</p></div>
+</section>
+
+<section id="calc" class="card">
+  <h2>三、互动计算器：调查实验如何得到平均处理效应</h2>
+  <p class="lead">平均处理效应的直觉很简单：随机分组后，处理组均值减去对照组均值。</p>
+  <div class="sliderRow"><label>对照组平均支持度</label><input id="control" type="range" min="1" max="7" step="0.1" value="4.0"><strong id="controlVal">4.0</strong></div>
+  <div class="sliderRow"><label>处理组平均支持度</label><input id="treat" type="range" min="1" max="7" step="0.1" value="5.1"><strong id="treatVal">5.1</strong></div>
+  <div class="resultBox">
+    <div class="metric"><div class="num" id="ateVal">1.1</div><div class="label">平均处理效应 ATE</div></div>
+    <div class="metric"><div class="num" id="dirVal">正向</div><div class="label">效应方向</div></div>
+    <div class="metric"><div class="num" id="sizeVal">较强</div><div class="label">直观大小</div></div>
+  </div>
+  <p class="note">这个计算器只展示原理。正式研究还需要显著性检验、标准误、协变量平衡、操纵检验和稳健性检验。</p>
+</section>
+
+<section id="conjoint" class="card">
+  <h2>四、联合实验：把一个方案拆成多个属性，同时随机组合</h2>
+  <p class="lead">联合实验的底层逻辑，是让受访者在多个随机生成的方案之间做选择，从而估计每个属性对选择概率的边际影响。</p>
+  <p>普通调查实验通常一次操纵一个或少数几个因素。联合实验则把一个对象拆成多个属性，每个属性有若干水平，然后随机生成多个方案让受访者选择。例如研究公众偏好什么样的基层治理方案，可以同时随机化“执行主体、技术工具、费用成本、参与方式、问责安排”等属性。</p>
+  <div class="diagram">
+    <div class="flow">
+      <div class="box"><div class="big">方案 = 属性组合</div><div class="small">主体 + 工具 + 成本 + 参与 + 问责</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="big">属性随机化</div><div class="small">每个方案随机抽取属性水平</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="big">受访者选择</div><div class="small">A 方案 vs B 方案</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="big">估计属性影响</div><div class="small">哪个属性提高被选概率</div></div>
+    </div>
+  </div>
+  <h3>试一试：随机生成两个治理方案</h3>
+  <p>点击按钮后，两个方案会随机生成。联合实验真正关心的不是某一个完整方案，而是长期随机化后，每个属性水平会让方案更容易还是更不容易被选择。</p>
+  <div class="choiceBtns"><button id="regen">随机生成方案</button></div>
+  <div class="profileWrap">
+    <div class="profile" id="profileA"><h4>方案 A</h4></div>
+    <div class="profile" id="profileB"><h4>方案 B</h4></div>
+  </div>
+  <div class="choiceBtns"><button class="chooseA" onclick="recordChoice('A')">我会选择方案 A</button><button class="chooseB" onclick="recordChoice('B')">我会选择方案 B</button></div>
+  <div class="resultBox">
+    <div class="metric"><div class="num" id="choiceCount">0</div><div class="label">你已做出的选择次数</div></div>
+    <div class="metric"><div class="num" id="lastChoice">-</div><div class="label">上一次选择</div></div>
+    <div class="metric"><div class="num">AMCE</div><div class="label">属性平均边际效应</div></div>
+  </div>
+  <div class="formula">
+AMCE = 某属性水平出现时的平均选择概率 - 基准属性水平出现时的平均选择概率
+
+含义：
+在其他属性随机化的情况下，某个属性水平本身会让方案更容易被选择多少。
+  </div>
+  <h3>联合实验看的是属性，不只是方案</h3>
+  <p>如果“政府主导”的方案更常被选择，且其他属性都是随机分配的，那么我们可以说，在平均意义上，“政府主导”这个属性提高了方案被选择的概率。如果“成本较高”显著降低被选概率，就说明成本是公众偏好的约束因素。</p>
+  <div class="mini">
+    <strong>AMCE 的直觉示意</strong>
+    <p>假设以“人工服务”为基准，“AI 辅助”出现时方案被选择概率平均提高 8 个百分点，那么 AI 辅助的 AMCE 就是 +0.08。</p>
+    <div class="amceBar"><div class="amceFill" style="width:58%"></div></div>
+    <p style="font-size:14px;color:#64748b;margin:0">基准 50% → AI 辅助 58%，差值就是 +8 个百分点。</p>
+  </div>
+</section>
+
+<section id="compare" class="card">
+  <h2>五、调查实验和联合实验有什么区别</h2>
+  <p class="lead">调查实验更像是在问“某个刺激有没有影响”，联合实验更像是在问“一个复杂方案中的哪些属性更重要”。</p>
+  <table class="compareTable">
+    <thead><tr><th>比较维度</th><th>调查实验</th><th>联合实验</th></tr></thead>
+    <tbody>
+      <tr><td>核心问题</td><td>某个信息、身份、框架或制度安排是否改变态度。</td><td>复杂方案中哪些属性影响选择或偏好。</td></tr>
+      <tr><td>实验刺激</td><td>通常是一个或少数几个情境。</td><td>多个属性及其水平随机组合成方案。</td></tr>
+      <tr><td>识别对象</td><td>处理刺激对结果变量的平均影响。</td><td>每个属性水平对方案被选择概率的边际影响。</td></tr>
+      <tr><td>适合问题</td><td>AI 介入是否降低信任；责任归因是否影响问责态度。</td><td>公众偏好什么样的政策方案；干部更支持什么样的治理工具。</td></tr>
+      <tr><td>最大优势</td><td>结构清晰，因果解释直接。</td><td>能处理多属性偏好，更接近真实选择场景。</td></tr>
+      <tr><td>主要风险</td><td>操纵是否成功、情境是否真实、社会赞许偏差。</td><td>方案是否过于复杂、属性是否现实、受访者是否认真选择。</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="risks" class="card">
+  <h2>六、常见风险：不是随机化了就万事大吉</h2>
+  <p class="lead">调查实验和联合实验的识别力来自随机化，但研究质量取决于刺激设计、测量质量和解释边界。</p>
+  <details open><summary>1. 操纵失败</summary><p>受访者没有理解或注意到实验刺激，那么组间差异就不能代表预期处理效应。研究中常加入操纵检验，确认受访者是否真正接收了刺激。</p></details>
+  <details><summary>2. 情境不真实</summary><p>实验材料如果脱离现实，受访者的回答可能只是纸面反应，不能反映真实态度或行为。情境设计要尽量贴近真实制度、真实语言和真实选择。</p></details>
+  <details><summary>3. 社会赞许偏差</summary><p>涉及政治态度、公共价值、道德判断时，受访者可能给出“看起来正确”的答案，而不是真实偏好。匿名性、间接提问和设计优化可以部分缓解。</p></details>
+  <details><summary>4. SUTVA 问题</summary><p>一个受访者的处理不应影响另一个受访者的结果，且每个处理版本应当清楚稳定。如果受访者互相交流，或处理材料含义混乱，实验解释会受影响。</p></details>
+  <details><summary>5. 联合实验的属性设计不合理</summary><p>属性太多会造成认知负担，属性组合不现实会降低外部效度。联合实验设计要控制属性数量，并避免现实中不可能出现的组合。</p></details>
+  <div class="warn">最重要的提醒：实验识别的是你设计出来的刺激效应，不自动等于现实政策的全部效果。解释时要说清楚实验情境、受访样本和结果变量。</div>
+</section>
+
+<section id="quiz" class="card quiz">
+  <h2>七、三道自测题</h2>
+  <p class="lead">能回答这三题，就基本理解了调查实验和联合实验的原理。</p>
+  <h3>1. 调查实验为什么能识别因果效应？</h3>
+  <label><input type="radio" name="q1" value="a"> 因为问卷样本越大，因果效应自然成立。</label>
+  <label><input type="radio" name="q1" value="b"> 因为受访者被随机分到不同处理组，组间平均差异可归因于刺激。</label>
+  <label><input type="radio" name="q1" value="c"> 因为问卷可以控制所有混杂因素。</label>
+  <h3>2. 联合实验最适合回答什么问题？</h3>
+  <label><input type="radio" name="q2" value="a"> 一个复杂方案中哪些属性影响选择。</label>
+  <label><input type="radio" name="q2" value="b"> 一个地区政策前后的长期趋势。</label>
+  <label><input type="radio" name="q2" value="c"> 一个变量是否存在空间自相关。</label>
+  <h3>3. AMCE 表示什么？</h3>
+  <label><input type="radio" name="q3" value="a"> 某属性水平相对于基准水平对选择概率的平均边际影响。</label>
+  <label><input type="radio" name="q3" value="b"> 受访者对完整方案的总评分。</label>
+  <label><input type="radio" name="q3" value="c"> 问卷样本的平均年龄。</label>
+  <button onclick="checkQuiz()">查看答案</button>
+  <div class="feedback" id="quizFeedback"></div>
+</section>
+
+<footer>调查实验与联合实验的核心：通过随机化，把态度差异变成可以解释的因果差异。</footer>
+</main>
+<script>
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.panel).classList.add('active');
+    });
+  });
+  const control=document.getElementById('control');
+  const treat=document.getElementById('treat');
+  function updateATE(){
+    const c=parseFloat(control.value), t=parseFloat(treat.value), ate=t-c;
+    document.getElementById('controlVal').textContent=c.toFixed(1);
+    document.getElementById('treatVal').textContent=t.toFixed(1);
+    document.getElementById('ateVal').textContent=ate.toFixed(1);
+    document.getElementById('dirVal').textContent=ate>0.05?'正向':ate<-0.05?'负向':'接近0';
+    document.getElementById('sizeVal').textContent=Math.abs(ate)>=1?'较强':Math.abs(ate)>=.4?'中等':'较弱';
+  }
+  control.addEventListener('input',updateATE); treat.addEventListener('input',updateATE); updateATE();
+
+  const attrs={
+    '执行主体':['街道办主导','居委会主导','专业社会组织主导','平台企业参与'],
+    '技术工具':['人工服务','AI 辅助','大数据预警','线上线下结合'],
+    '居民参与':['仅被告知','参与协商','参与投票','参与监督'],
+    '费用成本':['不增加成本','少量增加成本','明显增加成本'],
+    '问责安排':['无明确问责','过程公开','第三方评估','定期公布绩效']
+  };
+  let count=0;
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+  function makeProfile(id,title){
+    const el=document.getElementById(id); el.innerHTML='<h4>'+title+'</h4>';
+    Object.entries(attrs).forEach(([k,vals])=>{
+      const div=document.createElement('div'); div.className='attr';
+      div.innerHTML='<span>'+k+'</span><strong>'+pick(vals)+'</strong>';
+      el.appendChild(div);
+    });
+  }
+  function regen(){makeProfile('profileA','方案 A'); makeProfile('profileB','方案 B')}
+  document.getElementById('regen').addEventListener('click',regen); regen();
+  function recordChoice(choice){
+    count++; document.getElementById('choiceCount').textContent=count;
+    document.getElementById('lastChoice').textContent=choice;
+    regen();
+  }
+  window.recordChoice=recordChoice;
+  function checkQuiz(){
+    const a=document.querySelector('input[name=q1]:checked')?.value;
+    const b=document.querySelector('input[name=q2]:checked')?.value;
+    const c=document.querySelector('input[name=q3]:checked')?.value;
+    let score=0; if(a==='b')score++; if(b==='a')score++; if(c==='a')score++;
+    document.getElementById('quizFeedback').textContent='你答对了 '+score+' / 3 题。正确答案：1-B，2-A，3-A。';
+  }
+  window.checkQuiz=checkQuiz;
+</script>
+</body>
+</html>

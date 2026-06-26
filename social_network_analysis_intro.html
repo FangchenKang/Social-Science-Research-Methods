@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>社会网络分析法：背后的原理</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;--green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:56px 22px 30px}.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:700;font-size:13px;letter-spacing:.08em}
+h1{max-width:1000px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}.subtitle{max-width:850px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1120px,92vw);margin:0 auto 70px}.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}h3{margin:16px 0 8px;font-size:20px}p{margin:10px 0;color:#2c2d2f}.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}.nodebox{min-width:120px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}.nodebox.purple{border-color:var(--purple);color:var(--purple)}.nodebox.orange{border-color:var(--orange);color:var(--orange)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}.tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+.panel{display:none}.panel.active{display:block}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}label{display:block;font-weight:750}input[type=range]{width:100%}.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}
+.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:390px;background:#fff;border:1px solid var(--line);border-radius:20px}.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}@media(max-width:820px){.grid,.grid3,.controls,.output{grid-template-columns:1fr}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">METHOD NOTE</span>
+<h1>社会网络分析法：从“属性解释”转向“关系解释”</h1>
+<p class="subtitle">社会网络分析法的核心不是画关系图，而是把行动者之间的关系结构作为解释对象和解释变量，理解权力、资源、信息、信任和合作如何在网络中流动。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#intuition">核心直觉</a><a href="#origin">理论渊源</a><a href="#elements">节点与关系</a><a href="#matrix">矩阵思维</a><a href="#measures">核心指标</a><a href="#structure">结构位置</a><a href="#types">网络类型</a><a href="#demo">互动演示</a><a href="#workflow">研究流程</a><a href="#pitfalls">常见误区</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心直觉：关系不是背景，而是社会结构本身</h2>
+<p class="lead">社会网络分析法，英文是 Social Network Analysis，简称 SNA。它的基本出发点是：个体、组织或地区的行为，不能只用自身属性解释，还要看它处在什么关系网络中。一个行动者是否有影响力，不仅取决于它有什么资源，也取决于它和谁连接、连接多少、处在网络中心还是边缘、是否控制信息和资源流动的通道。</p>
+<div class="quote">一句话记住：传统分析问“这个人有什么特征”，网络分析问“这个人和谁发生关系，并处在什么结构位置”。</div>
+<div class="grid">
+<div class="card soft"><span class="tag">属性视角</span><h3>看行动者自身</h3><p>比如一个社区居民的年龄、收入、教育、政治兴趣会影响参与行为。这里解释来自个体属性。</p></div>
+<div class="card soft2"><span class="tag">关系视角</span><h3>看行动者之间</h3><p>比如一个居民是否处在邻里互助网络中心，是否连接不同小群体，是否能获得更多信息和动员资源。这里解释来自关系结构。</p></div>
+</div>
+</section>
+
+<section id="origin">
+<h2>二、理论渊源：社会网络分析来自社会关系、图论和结构社会学的结合</h2>
+<p class="lead">社会网络分析并不是简单的数据可视化工具，它有深厚的理论来源。一方面，它继承了社会学关于社会关系和社会结构的传统；另一方面，它吸收了图论、矩阵代数和统计模型，用形式化方法刻画关系结构。</p>
+<table>
+<tr><th>思想来源</th><th>代表线索</th><th>对 SNA 的贡献</th></tr>
+<tr><td>早期社会学关系思想</td><td>Simmel 等人关于社会形式、群体关系和互动结构的讨论</td><td>提出社会不是孤立个体相加，而是在互动关系中形成结构。</td></tr>
+<tr><td>社会计量学</td><td>Moreno 的 sociometry 和社会图</td><td>用图形方式呈现群体成员之间的选择、排斥和连接，是现代网络图的重要前身。</td></tr>
+<tr><td>人类学与小群体研究</td><td>Manchester 学派、Barnes、Bott 等关系研究</td><td>强调亲属、邻里、职业和日常互动网络如何影响社会行为。</td></tr>
+<tr><td>图论与数学社会科学</td><td>节点、边、路径、距离、中心性、密度等形式化工具</td><td>使网络结构可以被计算、比较和建模。</td></tr>
+<tr><td>结构社会学与社会资本理论</td><td>Granovetter、Burt、Coleman 等</td><td>发展出弱关系、结构洞、闭合网络、社会资本等经典解释框架。</td></tr>
+</table>
+<div class="quote">因此，SNA 的学术核心不是“把关系画出来”，而是用关系结构解释社会行动、资源获取、信息传播和权力位置。</div>
+</section>
+
+<section id="elements">
+<h2>三、节点与关系：网络由“谁”和“谁与谁相连”构成</h2>
+<p>社会网络的基本单位是节点和边。节点可以是个人、组织、部门、城市、政策、文本、事件；边表示节点之间的关系，可以是认识、合作、信任、转发、资金流、隶属、共同参与或政策学习。</p>
+<div class="diagram"><div class="nodebox">节点<br>行动者</div><div class="arrow"></div><div class="nodebox purple">边<br>关系</div><div class="arrow"></div><div class="nodebox orange">网络<br>结构</div></div>
+<table>
+<tr><th>研究对象</th><th>节点是什么</th><th>边是什么</th></tr>
+<tr><td>基层治理协同</td><td>街道、居委会、物业、社会组织、居民骨干</td><td>协作、转介、共同处理事务</td></tr>
+<tr><td>政策扩散</td><td>地方政府或城市</td><td>学习、模仿、人员交流、政策引用</td></tr>
+<tr><td>学术合作</td><td>作者、机构或论文</td><td>合著、引用、共同关键词</td></tr>
+<tr><td>网络舆论</td><td>账号、帖子或话题</td><td>转发、评论、关注、共现</td></tr>
+</table>
+<p>边还可以有方向和权重。A 向 B 求助，不等于 B 向 A 求助；两地合作 1 次和合作 20 次，也不是同样强度的关系。</p>
+</section>
+
+<section id="matrix">
+<h2>四、矩阵思维：网络图背后是一张关系表</h2>
+<p>网络图看起来是点和线，但计算时通常转化为邻接矩阵。矩阵中的行和列都是节点，单元格表示两个节点之间是否有关系，或者关系强度是多少。</p>
+<div class="formula">A_ij = 1：节点 i 与节点 j 有关系<br>A_ij = 0：节点 i 与节点 j 没有关系<br>A_ij > 0：关系有强弱，数值越大关系越强</div>
+<table>
+<tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+<tr><td>A</td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+<tr><td>B</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><td>C</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>D</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+</table>
+<p>矩阵思维很重要。它说明 SNA 不只是画图，而是把社会关系转化为可以计算的结构数据。</p>
+</section>
+
+<section id="measures">
+<h2>五、核心指标：中心性、密度、距离和凝聚性</h2>
+<p>社会网络分析的指标服务于理论解释。不同指标回答不同问题：谁连接最多，谁离所有人最近，谁控制通道，网络整体是否紧密，群体是否分裂。</p>
+<div class="grid3">
+<div class="card soft"><span class="tag">度数中心性</span><h3>连接最多</h3><p>度数中心性看一个节点有多少直接连接。连接越多，说明它接触面越广，可能获得更多信息和资源。</p></div>
+<div class="card soft2"><span class="tag">接近中心性</span><h3>距离最短</h3><p>接近中心性看一个节点到其他节点的平均距离。距离越短，说明它越容易快速触达整个网络。</p></div>
+<div class="card soft3"><span class="tag">中介中心性</span><h3>控制通道</h3><p>中介中心性看一个节点是否位于其他节点最短路径上。数值高，说明它可能是桥梁、枢纽或把关者。</p></div>
+</div>
+<div class="grid">
+<div class="card"><span class="tag">特征向量中心性</span><p>不仅看连接数量，还看连接对象是否重要。连接重要节点，会提高自身重要性。</p></div>
+<div class="card"><span class="tag">网络密度</span><p>实际存在的关系占所有可能关系的比例。密度越高，整体越紧密，但也可能更封闭。</p></div>
+</div>
+</section>
+
+<section id="structure">
+<h2>六、结构位置：权力常常来自“位置”，不只来自“资源”</h2>
+<p>社会网络分析特别强调结构位置。一个行动者的影响力，可能来自它位于中心，也可能来自它连接了两个原本不相连的群体。位置决定了信息、资源和机会流向。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">结构洞</span><h3>连接断裂群体</h3><p>Burt 的结构洞理论强调，如果一个行动者连接了两个原本不相连的群体，它就可能掌握信息优势和控制优势。</p></div>
+<div class="card soft2"><span class="tag">弱关系</span><h3>带来新信息</h3><p>Granovetter 的弱关系理论指出，熟人网络之外的弱连接，往往能带来不同圈层的新信息和新机会。</p></div>
+<div class="card soft3"><span class="tag">闭合网络</span><h3>形成信任与约束</h3><p>Coleman 的社会资本理论强调，关系闭合可以增强信任、规范和监督，但也可能限制外部信息进入。</p></div>
+<div class="card"><span class="tag">核心—边缘</span><h3>不平等结构</h3><p>核心节点相互紧密连接并控制资源，边缘节点连接较少，容易在信息和权力结构中被排除。</p></div>
+</div>
+</section>
+
+<section id="types">
+<h2>七、网络类型：研究问题不同，网络构造也不同</h2>
+<p>社会网络分析不是只有一种网络。研究者必须根据问题决定网络边界、节点类型和关系定义。</p>
+<table>
+<tr><th>网络类型</th><th>含义</th><th>适用场景</th></tr>
+<tr><td>整体网络</td><td>研究一个边界清楚的完整网络</td><td>一个社区治理网络、一个政策协作网络</td></tr>
+<tr><td>自我中心网络</td><td>围绕一个核心行动者看其关系圈</td><td>居民个人支持网络、干部资源网络</td></tr>
+<tr><td>有向网络</td><td>关系有方向</td><td>求助、转发、引用、命令、资金流</td></tr>
+<tr><td>加权网络</td><td>关系有强弱</td><td>合作次数、互动频率、资金规模</td></tr>
+<tr><td>二模网络</td><td>两类节点构成网络</td><td>人—组织、作者—论文、部门—项目</td></tr>
+</table>
+</section>
+
+<section id="demo">
+<h2>八、互动演示：中心性和结构洞如何出现</h2>
+<div class="tabs"><button class="tab active" data-tab="centralPanel">中心性演示</button><button class="tab" data-tab="densityPanel">密度演示</button></div>
+<div class="panel active" id="centralPanel">
+<p>调整桥接节点强度。中间节点连接两个群体时，中介中心性会提高，它不一定连接最多，但可能控制跨群体通道。</p>
+<div class="controls">
+<div><label>桥接关系强度 <span class="value" id="bridgeVal">1.00</span></label><input id="bridge" type="range" min="0" max="1" step="0.1" value="1"></div>
+<div><label>群体内部密度 <span class="value" id="insideVal">0.80</span></label><input id="inside" type="range" min="0.2" max="1" step="0.1" value="0.8"></div>
+<div><label>节点规模</label><input type="range" min="0" max="1" value="0" disabled></div>
+</div>
+<canvas id="networkCanvas" width="900" height="390"></canvas>
+<div class="output"><div class="metric"><span>桥接节点</span><strong id="bridgeNode">E</strong></div><div class="metric"><span>结构意义</span><strong id="structureMeaning">通道</strong></div><div class="metric"><span>网络形态</span><strong id="netShape">两群体</strong></div></div>
+</div>
+<div class="panel" id="densityPanel">
+<p>调整关系数量，观察网络密度变化。密度越高，整体越紧密；但高密度不一定总是好，也可能意味着封闭和冗余。</p>
+<div class="controls">
+<div><label>关系数量 <span class="value" id="edgeVal">8</span></label><input id="edgeCount" type="range" min="3" max="15" step="1" value="8"></div>
+<div><label>最大可能关系</label><input type="range" min="0" max="1" value="0" disabled></div>
+<div><label>密度判断 <span class="value" id="densityJudge">中等</span></label><input type="range" min="0" max="1" value="0" disabled></div>
+</div>
+<canvas id="densityCanvas" width="900" height="390"></canvas>
+<div class="output"><div class="metric"><span>网络密度</span><strong id="densityOut">0.00</strong></div><div class="metric"><span>实际关系</span><strong id="edgeOut">8</strong></div><div class="metric"><span>可能关系</span><strong>15</strong></div></div>
+</div>
+</section>
+
+<section id="workflow">
+<h2>九、社会网络分析通常怎么做</h2>
+<div class="grid3">
+<div class="card soft"><span class="tag">第一步</span><h3>定义网络边界</h3><p>明确研究的是哪个网络，哪些节点被纳入，哪些关系被视为有效关系。</p></div>
+<div class="card soft2"><span class="tag">第二步</span><h3>收集关系数据</h3><p>通过问卷、访谈、档案、合作记录、引用记录、平台数据等方式构造关系矩阵。</p></div>
+<div class="card soft3"><span class="tag">第三步</span><h3>计算并解释结构</h3><p>计算中心性、密度、凝聚子群、核心—边缘、结构洞等指标，并回到理论问题解释。</p></div>
+</div>
+<p>好的 SNA 研究不是指标堆砌，而是用网络结构回答一个实质问题：谁有影响力，资源如何流动，合作为什么形成，政策如何扩散，群体为何分裂或整合。</p>
+</section>
+
+<section id="pitfalls">
+<h2>十、常见误区：社会网络分析不是把图画得复杂</h2>
+<div class="grid">
+<div class="card"><h3>误区一：只有图，没有问题</h3><p>网络图只是展示，真正重要的是关系结构如何解释社会现象。</p></div>
+<div class="card"><h3>误区二：节点和边定义不清</h3><p>如果不知道谁是节点、什么算关系，后面的中心性和密度都没有解释意义。</p></div>
+<div class="card"><h3>误区三：把中心性等同于权力</h3><p>中心性可能意味着资源优势，也可能只是任务负担。必须结合情境解释。</p></div>
+<div class="card"><h3>误区四：忽略网络边界</h3><p>网络边界不同，指标结果会变。一个行动者在小网络中中心，在更大网络中可能并不中心。</p></div>
+</div>
+</section>
+
+<section id="quiz">
+<h2>十一、自测</h2>
+<div class="qa"><strong>问题 1：</strong>一个人连接数量最多，说明他一定最有权力吗？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">不一定。连接多只说明度数中心性高，是否有权力还要看关系质量、资源类型、结构位置和具体情境。</div></div>
+<div class="qa"><strong>问题 2：</strong>中介中心性高说明什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">说明该节点常位于其他节点之间的路径上，可能具有桥梁、通道或把关作用。</div></div>
+<div class="qa"><strong>问题 3：</strong>为什么 W 或邻接矩阵不是技术细节？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">因为矩阵定义了谁与谁有关系，也就定义了网络结构。关系定义不同，研究结论可能完全不同。</div></div>
+</section>
+</main>
+<div class="footer">一句话记住：社会网络分析把关系结构变成研究对象，用节点位置、连接模式和网络结构解释社会行动。</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+document.querySelectorAll(".tab").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(b){b.classList.remove("active")});document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active")});btn.classList.add("active");$(btn.dataset.tab).classList.add("active");drawNetwork();drawDensity()})})
+function toggleAnswer(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block"}
+function drawLine(ctx,a,b,w,color){ctx.strokeStyle=color;ctx.globalAlpha=w;ctx.lineWidth=2+2*w;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.globalAlpha=1}
+function drawNode(ctx,p,label,color,r){ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#202124";ctx.font="bold 16px sans-serif";ctx.textAlign="center";ctx.fillText(label,p.x,p.y-r-8)}
+function drawNetwork(){
+ var br=+$("bridge").value,inside=+$("inside").value;$("bridgeVal").textContent=br.toFixed(2);$("insideVal").textContent=inside.toFixed(2);
+ var c=$("networkCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,390);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,390);
+ var P={A:{x:170,y:120},B:{x:110,y:230},C:{x:250,y:240},D:{x:390,y:185},E:{x:510,y:185},F:{x:650,y:120},G:{x:600,y:250},H:{x:760,y:230}};
+ [["A","B"],["A","C"],["B","C"],["F","G"],["F","H"],["G","H"]].forEach(function(e){drawLine(ctx,P[e[0]],P[e[1]],inside,"#7b4b9a")});
+ drawLine(ctx,P.D,P.E,br,"#b56a2b");drawLine(ctx,P.C,P.D,inside,"#2f6f5e");drawLine(ctx,P.E,P.G,inside,"#2f6f5e");
+ ["A","B","C"].forEach(function(n){drawNode(ctx,P[n],n,"#e8f1ec",22)});drawNode(ctx,P.D,"D","#f5eadf",24);drawNode(ctx,P.E,"E","#f5eadf",24);["F","G","H"].forEach(function(n){drawNode(ctx,P[n],n,"#efe7f5",22)});
+ ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("D 和 E 连接两个群体，是跨群体通道；桥接关系越强，结构洞位置越明显。",450,350);
+ $("structureMeaning").textContent=br>0.5?"通道":"断裂";$("netShape").textContent=br>0.1?"两群体相连":"两群体分离";
+}
+function drawDensity(){
+ var edge=+$("edgeCount").value;$("edgeVal").textContent=edge;$("edgeOut").textContent=edge;var density=edge/15;$("densityOut").textContent=density.toFixed(2);$("densityJudge").textContent=density>.7?"较高":(density>.35?"中等":"较低");
+ var c=$("densityCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,390);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,390);
+ var nodes=[];for(var i=0;i<6;i++){var ang=-Math.PI/2+i*Math.PI*2/6;nodes.push({x:450+190*Math.cos(ang),y:185+130*Math.sin(ang)})}
+ var all=[];for(var i=0;i<6;i++){for(var j=i+1;j<6;j++){all.push([i,j])}}
+ for(var k=0;k<edge;k++){var e=all[k];drawLine(ctx,nodes[e[0]],nodes[e[1]],0.85,"#2f6f5e")}
+ nodes.forEach(function(p,i){drawNode(ctx,p,String.fromCharCode(65+i),"#e8f1ec",22)})
+ ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("密度 = 实际关系数 / 最大可能关系数。6 个节点最多有 15 条无向关系。",450,350);
+}
+["bridge","inside"].forEach(function(id){$(id).addEventListener("input",drawNetwork)})
+$("edgeCount").addEventListener("input",drawDensity)
+drawNetwork();drawDensity()
+</script>
+</body>
+</html>

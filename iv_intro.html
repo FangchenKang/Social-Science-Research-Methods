@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IV 工具变量法：从内生性到外生变化</title>
+  <style>
+    :root{
+      --bg:#f7f3ec;
+      --paper:#fffaf2;
+      --ink:#23201b;
+      --muted:#746a5d;
+      --line:#d7c9b4;
+      --accent:#7a4f2a;
+      --accent2:#2f5f5a;
+      --danger:#9b3d30;
+      --good:#3e7452;
+      --shadow:0 18px 50px rgba(45,34,22,.12);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(122,79,42,.12), transparent 32%),
+        radial-gradient(circle at 90% 10%, rgba(47,95,90,.10), transparent 30%),
+        linear-gradient(180deg,#fbf6ee 0%, var(--bg) 100%);
+      color:var(--ink);
+      line-height:1.75;
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 80px}
+    header.hero{
+      min-height:560px;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:28px;
+      align-items:center;
+      padding:46px 0 24px;
+    }
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:7px 12px;border:1px solid var(--line);border-radius:999px;
+      color:var(--accent);background:rgba(255,250,242,.75);font-weight:700;font-size:13px;
+    }
+    h1{font-size:clamp(36px,6vw,72px);line-height:1.05;margin:18px 0 16px;letter-spacing:-1.4px}
+    .subtitle{font-size:20px;color:var(--muted);max-width:680px;margin:0 0 26px}
+    .hero-card,.card{
+      background:rgba(255,250,242,.88);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .hero-card{padding:22px;position:relative;overflow:hidden}
+    .hero-card:before{
+      content:"";position:absolute;inset:auto -80px -120px auto;width:260px;height:260px;border-radius:50%;background:rgba(47,95,90,.10)
+    }
+    .big-formula{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      background:#2a2118;color:#fff6e9;border-radius:18px;padding:18px;font-size:16px;overflow:auto;margin:16px 0
+    }
+    .formula-highlight{color:#ffd28d;font-weight:800}
+    .toc{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+    .toc a{color:var(--ink);text-decoration:none;border:1px solid var(--line);background:#fffaf2;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:700}
+    .toc a:hover{border-color:var(--accent);color:var(--accent)}
+    section{margin:34px 0}
+    .section-title{font-size:32px;line-height:1.25;margin:0 0 14px;letter-spacing:-.5px}
+    .lead{font-size:18px;color:var(--muted);max-width:920px;margin:0 0 22px}
+    .card{padding:24px;margin:18px 0}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .mini{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.45)}
+    .mini h3{margin:0 0 8px;font-size:19px}
+    .mini p{margin:0;color:var(--muted)}
+    .tag{display:inline-block;border-radius:999px;background:rgba(122,79,42,.10);color:var(--accent);padding:2px 9px;font-weight:800;font-size:12px;margin-bottom:9px}
+    .flow{display:grid;grid-template-columns:1fr 70px 1fr 70px 1fr;align-items:center;gap:10px;margin:22px 0}
+    .node{border:2px solid var(--line);border-radius:18px;padding:18px;text-align:center;background:#fffaf2;min-height:110px;display:flex;flex-direction:column;justify-content:center}
+    .node strong{font-size:22px}.node span{color:var(--muted);font-size:14px}.arrow{text-align:center;font-size:34px;color:var(--accent);font-weight:900}
+    .diagram{position:relative;height:300px;border:1px dashed var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.50),rgba(255,255,255,.15));overflow:hidden;margin-top:12px}
+    .circle-node{position:absolute;width:132px;height:72px;border-radius:22px;border:2px solid var(--line);background:#fffaf2;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;box-shadow:0 10px 24px rgba(45,34,22,.08)}
+    .z{left:60px;top:106px;border-color:var(--accent);color:var(--accent)}
+    .x{left:calc(50% - 66px);top:106px;border-color:var(--accent2);color:var(--accent2)}
+    .y{right:60px;top:106px;border-color:#444;color:#444}
+    .u{left:calc(50% - 66px);top:24px;border-color:var(--danger);color:var(--danger)}
+    .dag-line{position:absolute;height:3px;background:var(--line);transform-origin:left center}.dag-line.good{background:var(--accent2)}.dag-line.inst{background:var(--accent)}.dag-line.bad{background:var(--danger)}
+    .l1{left:188px;top:142px;width:230px}.l2{left:calc(50% + 66px);top:142px;width:230px}.l3{left:calc(50% + 1px);top:93px;width:95px;transform:rotate(90deg)}
+    .arrowhead{position:absolute;width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:12px solid var(--line)}
+    .ah1{left:409px;top:136px;border-left-color:var(--accent)}.ah2{right:184px;top:136px;border-left-color:var(--accent2)}.ah3{left:calc(50% - 7px);top:104px;border-left-color:var(--danger);transform:rotate(90deg)}
+    .blocked{position:absolute;left:calc(50% + 160px);top:60px;color:var(--danger);font-weight:900;border:2px solid var(--danger);border-radius:999px;padding:6px 10px;background:#fffaf2;transform:rotate(-8deg)}
+    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+    label{font-weight:800;color:var(--ink);font-size:14px;display:block;margin-bottom:4px}
+    input[type="range"]{width:100%}
+    .number{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent);font-weight:900}
+    .calc-box{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    .output{border-radius:20px;background:#2a2118;color:#fff6e9;padding:18px;min-height:190px}
+    .output h3{margin:0 0 12px;color:#ffd28d}.output p{margin:8px 0;color:#fff6e9}.output .big{font-size:32px;font-weight:900;color:#fff}
+    .table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:18px;margin-top:14px;border:1px solid var(--line)}
+    .table th,.table td{border-bottom:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}.table th{background:#efe4d2;color:#4b3b2b}.table tr:last-child td{border-bottom:none}
+    .pill{display:inline-block;border-radius:999px;padding:3px 9px;background:rgba(47,95,90,.12);color:var(--accent2);font-size:12px;font-weight:900}
+    .warn{background:rgba(155,61,48,.08);border-left:5px solid var(--danger);padding:16px;border-radius:14px;color:#5b281f}
+    .goodbox{background:rgba(62,116,82,.09);border-left:5px solid var(--good);padding:16px;border-radius:14px;color:#244734}
+    .quiz button,.switch button{border:1px solid var(--line);background:#fffaf2;border-radius:999px;padding:9px 13px;margin:4px;cursor:pointer;font-weight:800;color:var(--ink)}
+    .quiz button:hover,.switch button:hover{border-color:var(--accent);color:var(--accent)}
+    .quiz-result{margin-top:12px;font-weight:900}
+    canvas{width:100%;height:280px;border:1px solid var(--line);border-radius:20px;background:#fffaf2}
+    footer{margin-top:50px;color:var(--muted);font-size:14px;text-align:center}
+    @media(max-width:900px){header.hero,.grid,.grid3,.calc-box{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.controls{grid-template-columns:1fr}.diagram{height:420px}.z{left:calc(50% - 66px);top:42px}.x{left:calc(50% - 66px);top:168px}.y{left:calc(50% - 66px);top:294px}.u{left:18px;top:168px}.dag-line,.arrowhead,.blocked{display:none}}
+  </style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div>
+        <span class="badge">因果识别方法 · IV 工具变量法</span>
+        <h1>当 X 不干净，怎样识别 X 对 Y 的因果效应？</h1>
+        <p class="subtitle">IV 的核心不是“找一个相关变量”，而是找一个只推动 X、但不绕过 X 直接影响 Y 的外部工具。它把 X 中相对外生的那部分变化提取出来，用这部分变化识别因果效应。</p>
+        <div class="toc">
+          <a href="#problem">1. 为什么需要 IV</a>
+          <a href="#logic">2. 工具变量逻辑</a>
+          <a href="#conditions">3. 两个核心条件</a>
+          <a href="#twosls">4. 两阶段最小二乘</a>
+          <a href="#late">5. LATE 与局部效应</a>
+          <a href="#risks">6. 常见风险</a>
+          <a href="#quiz">7. 自测</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <h2>一句话讲清楚 IV</h2>
+        <p>普通回归用 X 的全部变化解释 Y，但 X 可能混入能力、家庭、地区基础、反向因果等内生因素；IV 只用工具变量 Z 推动的那一部分 X 的变化来解释 Y。</p>
+        <div class="big-formula">
+          普通回归：Y = α + βX + ε<br/>
+          但 X 可能与 ε 相关 → β 不可信<br/><br/>
+          IV 思路：Z → X → Y<br/>
+          <span class="formula-highlight">只使用 Z 带来的 X 的外生变化</span>
+        </div>
+        <p class="warn">判断 IV 是否可信，不看它和 Y 有没有相关，而看它是否只通过 X 影响 Y。</p>
+      </div>
+    </header>
+
+    <section id="problem">
+      <h2 class="section-title">一、IV 要解决的不是相关问题，而是内生性问题</h2>
+      <p class="lead">当解释变量 X 与误差项相关时，普通回归无法把 X 的因果效应从其他混杂因素中分离出来。IV 的出现，正是为了在 X “不干净”的情况下，寻找一部分相对外生的变化。</p>
+      <div class="grid3">
+        <div class="mini"><span class="tag">遗漏变量</span><h3>看不见的因素同时影响 X 和 Y</h3><p>比如能力、家庭背景同时影响教育年限和收入，教育变量就混入了能力与家庭资源。</p></div>
+        <div class="mini"><span class="tag">反向因果</span><h3>不是 X 影响 Y，也可能是 Y 影响 X</h3><p>比如财政收入高的地方更可能建设数字平台，平台建设和治理绩效之间就可能互相影响。</p></div>
+        <div class="mini"><span class="tag">测量误差</span><h3>X 被测得不准，也会导致偏误</h3><p>比如真实治理能力难以测量，只能用替代指标，指标噪音会削弱或扭曲估计结果。</p></div>
+      </div>
+      <div class="card">
+        <h3>教育与收入的经典直觉</h3>
+        <p>如果直接用教育年限解释收入，得到的系数不一定是教育的真实回报。教育年限高的人，可能本来能力更强、家庭条件更好、成长环境更优，这些因素也会影响收入。IV 的办法是找一个外部因素 Z，例如义务教育改革、出生季度、学校距离等，用它带来的教育变化来估计教育对收入的影响。</p>
+      </div>
+    </section>
+
+    <section id="logic">
+      <h2 class="section-title">二、工具变量的底层逻辑：Z 推动 X，但不直接推动 Y</h2>
+      <p class="lead">一个好的工具变量像外部推力。它必须能改变核心解释变量 X，同时不能绕开 X 直接影响结果 Y。IV 因此不是随便找一个与 X 相关的变量，而是要找到一条可信的因果链。</p>
+      <div class="card">
+        <div class="diagram" aria-label="IV DAG">
+          <div class="circle-node z">工具变量 Z<br/><span>外部推力</span></div>
+          <div class="circle-node x">解释变量 X<br/><span>处理/核心变量</span></div>
+          <div class="circle-node y">结果变量 Y<br/><span>研究对象</span></div>
+          <div class="circle-node u">混杂因素 U<br/><span>能力/资源/基础</span></div>
+          <div class="dag-line inst l1"></div><div class="arrowhead ah1"></div>
+          <div class="dag-line good l2"></div><div class="arrowhead ah2"></div>
+          <div class="dag-line bad l3"></div><div class="arrowhead ah3"></div>
+          <div class="blocked">禁止：Z → Y</div>
+        </div>
+        <div class="grid">
+          <div class="mini"><h3>允许的路径</h3><p>Z 影响 X，X 再影响 Y。比如教育改革让一部分人多读书，多读书再影响收入。</p></div>
+          <div class="mini"><h3>危险的路径</h3><p>Z 不能直接影响 Y，也不能通过其他渠道影响 Y。否则 IV 估计混入了别的因果机制。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="conditions">
+      <h2 class="section-title">三、IV 成立需要两个核心条件</h2>
+      <p class="lead">相关性决定工具变量有没有力量，外生性决定工具变量是否干净。前者可以用数据检验，后者更多依赖制度背景、理论论证和排除替代解释。</p>
+      <div class="grid">
+        <div class="card">
+          <span class="tag">第一阶段</span>
+          <h3>相关性：Z 必须影响 X</h3>
+          <p>如果工具变量不能显著改变核心解释变量，它就无法提供用于识别的外生变化。弱工具变量会让 IV 估计非常不稳定，甚至比普通回归更糟。</p>
+          <div class="goodbox">经验判断：第一阶段通常要报告 Z 对 X 的影响，并关注 F 统计量。F 值过低时，需要警惕弱工具变量问题。</div>
+        </div>
+        <div class="card">
+          <span class="tag">排除限制</span>
+          <h3>外生性：Z 只能通过 X 影响 Y</h3>
+          <p>工具变量不能与遗漏变量相关，也不能绕过 X 直接影响 Y。比如“离大学远近”若同时代表城市化水平和就业机会，它就可能直接影响收入，而不只是影响教育。</p>
+          <div class="warn">外生性最难证明。它通常不是一个统计检验可以完全解决的问题，而要靠研究设计和制度事实说服读者。</div>
+        </div>
+      </div>
+      <table class="table">
+        <thead><tr><th>条件</th><th>问题</th><th>不满足时的后果</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill">相关性</span></td><td>Z 是否真的推动 X？</td><td>工具太弱，估计不稳定，标准误变大，结论不可信。</td></tr>
+          <tr><td><span class="pill">外生性</span></td><td>Z 是否只通过 X 影响 Y？</td><td>工具不干净，IV 估计仍然有内生性，甚至方向错误。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="twosls">
+      <h2 class="section-title">四、两阶段最小二乘：先提取 X 的外生部分，再解释 Y</h2>
+      <p class="lead">2SLS 是 IV 最常见的估计方式。第一阶段用 Z 预测 X，第二阶段用预测出来的 X 解释 Y。它的本质不是数学技巧，而是把 X 中由工具变量推动的部分分离出来。</p>
+      <div class="flow">
+        <div class="node"><strong>Z</strong><span>外部工具</span></div>
+        <div class="arrow">→</div>
+        <div class="node"><strong>X̂</strong><span>Z 预测出的 X</span></div>
+        <div class="arrow">→</div>
+        <div class="node"><strong>Y</strong><span>结果变量</span></div>
+      </div>
+      <div class="card calc-box">
+        <div>
+          <h3>互动计算器：Wald 估计量</h3>
+          <p>在最简单的二元工具变量情形中，IV 效应可以理解为“Z 对 Y 的影响”除以“Z 对 X 的影响”。</p>
+          <div class="big-formula">IV = ΔY / ΔX = (Z 对 Y 的影响) / (Z 对 X 的影响)</div>
+          <div class="controls">
+            <div><label>Z 对 X 的影响 ΔX：<span id="dxVal" class="number">0.30</span></label><input id="dx" type="range" min="0.05" max="1" step="0.01" value="0.30"></div>
+            <div><label>Z 对 Y 的影响 ΔY：<span id="dyVal" class="number">0.12</span></label><input id="dy" type="range" min="-0.5" max="0.8" step="0.01" value="0.12"></div>
+            <div><label>工具强度提示</label><p id="strength" class="number">中等</p></div>
+          </div>
+        </div>
+        <div class="output">
+          <h3>估计结果</h3>
+          <p>IV 估计值：</p>
+          <div id="ivEst" class="big">0.40</div>
+          <p id="ivExplain">意思是：由工具变量推动的 X 每增加 1 个单位，Y 平均增加 0.40 个单位。</p>
+          <p id="weakWarn" style="color:#ffd28d"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="late">
+      <h2 class="section-title">五、IV 估计的常常不是总体效应，而是 LATE</h2>
+      <p class="lead">IV 识别的是那些会因为工具变量变化而改变 X 的人的效应。这个人群叫遵从者，估计结果通常被解释为局部平均处理效应。</p>
+      <div class="grid3">
+        <div class="mini"><span class="tag">遵从者</span><h3>会被 Z 推动的人</h3><p>政策改革让他们多读书，距离变化让他们更可能上大学。IV 主要识别这类人的效应。</p></div>
+        <div class="mini"><span class="tag">总是处理者</span><h3>不管 Z 怎样都会接受处理</h3><p>无论有没有教育改革、离学校远近如何，他们都会继续接受教育。</p></div>
+        <div class="mini"><span class="tag">从不处理者</span><h3>不管 Z 怎样都不接受处理</h3><p>工具变量变化也不会改变他们的处理状态，因此他们不贡献 IV 的识别效应。</p></div>
+      </div>
+      <div class="card">
+        <h3>LATE 的含义</h3>
+        <p>如果用义务教育改革作为工具变量，IV 估计的不是所有人多读一年书的平均收益，而是那些因为改革才多读书的人，教育对他们收入的影响。如果用大学距离作为工具变量，估计的是那些因为离大学更近才上大学的人，大学教育对他们的影响。</p>
+      </div>
+    </section>
+
+    <section id="risks">
+      <h2 class="section-title">六、判断 IV 是否可信，要重点看这些风险</h2>
+      <p class="lead">IV 的难点不在二阶段回归，而在工具变量是否真正满足识别假设。下面这些问题，是阅读和写作 IV 论文时必须追问的地方。</p>
+      <div class="grid">
+        <div class="mini"><h3>弱工具变量</h3><p>Z 对 X 的影响很弱，导致估计不稳定。第一阶段不强，第二阶段再漂亮也要谨慎。</p></div>
+        <div class="mini"><h3>违反排除限制</h3><p>Z 除了通过 X，还通过其他渠道影响 Y。比如地理距离既影响教育，也影响就业市场。</p></div>
+        <div class="mini"><h3>工具变量与遗漏因素相关</h3><p>Z 本身不是随机的，可能反映地区基础、家庭背景、制度资源或选择偏差。</p></div>
+        <div class="mini"><h3>单调性问题</h3><p>工具变量应朝同一方向影响处理状态，不能让一部分人增加 X、另一部分人减少 X。</p></div>
+      </div>
+    </section>
+
+    <section id="example">
+      <h2 class="section-title">七、把 IV 写进论文时，应该讲清楚什么</h2>
+      <p class="lead">一篇好的 IV 研究，不是把工具变量放进模型就结束，而是要完整说明工具变量为什么有效、为什么外生、估计对象是谁、结论能推广到哪里。</p>
+      <table class="table">
+        <thead><tr><th>写作环节</th><th>必须回答的问题</th></tr></thead>
+        <tbody>
+          <tr><td>内生性来源</td><td>为什么普通回归不可信？是遗漏变量、反向因果还是测量误差？</td></tr>
+          <tr><td>工具变量来源</td><td>Z 来自什么制度、历史、地理或自然变化？为什么它能推动 X？</td></tr>
+          <tr><td>相关性检验</td><td>第一阶段是否足够强？是否存在弱工具变量风险？</td></tr>
+          <tr><td>外生性论证</td><td>Z 为什么不会直接影响 Y？为什么不与遗漏变量相关？</td></tr>
+          <tr><td>估计对象解释</td><td>估计的是总体效应，还是遵从者的局部平均处理效应？</td></tr>
+          <tr><td>稳健性与替代解释</td><td>有没有可能存在其他渠道？有没有做排除、安慰剂或机制检验？</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="quiz">
+      <h2 class="section-title">八、自测：你真的理解 IV 了吗？</h2>
+      <div class="card quiz">
+        <h3>问题 1：一个变量只要和 X 相关，就可以作为工具变量吗？</h3>
+        <button onclick="quiz(1,false)">可以，只要相关就行</button>
+        <button onclick="quiz(1,true)">不可以，还必须满足外生性</button>
+        <p id="q1" class="quiz-result"></p>
+      </div>
+      <div class="card quiz">
+        <h3>问题 2：如果 Z 能直接影响 Y，即使它也影响 X，还能作为工具变量吗？</h3>
+        <button onclick="quiz(2,false)">能，因为它影响 X</button>
+        <button onclick="quiz(2,true)">不能，因为违反排除限制</button>
+        <p id="q2" class="quiz-result"></p>
+      </div>
+      <div class="card quiz">
+        <h3>问题 3：IV 估计值通常可以无条件推广到所有人吗？</h3>
+        <button onclick="quiz(3,false)">可以，IV 就是总体平均效应</button>
+        <button onclick="quiz(3,true)">不一定，很多时候是遵从者的局部效应</button>
+        <p id="q3" class="quiz-result"></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <h2 class="section-title">最后一句话</h2>
+        <p class="lead">IV 的本质，是在 X 不干净时，借助一个外部工具 Z，把 X 中相对外生的变化提取出来，再用这部分变化识别 X 对 Y 的因果效应。它的核心不是二阶段公式，而是“Z 是否只通过 X 影响 Y”这一识别逻辑。</p>
+      </div>
+    </section>
+
+    <footer>IV 工具变量法互动讲义 · 单文件 HTML · 可直接用于课堂展示与自学</footer>
+  </div>
+
+  <script>
+    function updateIV(){
+      const dx = parseFloat(document.getElementById('dx').value);
+      const dy = parseFloat(document.getElementById('dy').value);
+      document.getElementById('dxVal').textContent = dx.toFixed(2);
+      document.getElementById('dyVal').textContent = dy.toFixed(2);
+      const est = dy / dx;
+      document.getElementById('ivEst').textContent = est.toFixed(2);
+      document.getElementById('ivExplain').textContent = `意思是：由工具变量推动的 X 每增加 1 个单位，Y 平均变化 ${est.toFixed(2)} 个单位。`;
+      let strength = '较强';
+      let warning = '';
+      if(dx < 0.15){ strength = '偏弱'; warning='注意：ΔX 很小，说明工具变量对 X 的推动力弱，IV 估计会非常敏感。'; }
+      else if(dx < 0.35){ strength = '中等'; warning='提示：工具变量有一定推动力，但仍应报告第一阶段强度。'; }
+      else { warning='提示：工具变量对 X 的推动较明显，但仍需论证外生性。'; }
+      document.getElementById('strength').textContent = strength;
+      document.getElementById('weakWarn').textContent = warning;
+    }
+    document.getElementById('dx').addEventListener('input', updateIV);
+    document.getElementById('dy').addEventListener('input', updateIV);
+    updateIV();
+
+    function quiz(n, correct){
+      const el = document.getElementById('q'+n);
+      if(correct){
+        el.style.color = '#3e7452';
+        if(n===1) el.textContent = '答对了。相关性只是第一步，工具变量还必须满足外生性和排除限制。';
+        if(n===2) el.textContent = '答对了。Z 直接影响 Y 会破坏“Z → X → Y”的单一路径。';
+        if(n===3) el.textContent = '答对了。IV 常常识别的是因 Z 改变处理状态的遵从者效应。';
+      }else{
+        el.style.color = '#9b3d30';
+        if(n===1) el.textContent = '不对。只相关不够，Z 还不能直接影响 Y，也不能与遗漏因素相关。';
+        if(n===2) el.textContent = '不对。如果 Z 直接影响 Y，IV 估计会混入其他机制。';
+        if(n===3) el.textContent = '不对。IV 的估计对象经常是局部平均处理效应，不一定是总体效应。';
+      }
+    }
+  </script>
+</body>
+</html>

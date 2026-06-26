@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>断点回归 RDD：底层原理互动讲义</title>
+  <style>
+    :root{
+      --bg:#f6f1e8;
+      --paper:#fffaf2;
+      --ink:#1f2933;
+      --muted:#697386;
+      --line:#d8cfc1;
+      --accent:#7b4f2c;
+      --accent2:#2f6f73;
+      --accent3:#9b2c2c;
+      --soft:#efe3d1;
+      --green:#d9eee8;
+      --red:#f4dada;
+      --yellow:#fff1c7;
+      --shadow:0 18px 45px rgba(50,35,20,.12);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(123,79,44,.13), transparent 34%),
+        radial-gradient(circle at 85% 12%, rgba(47,111,115,.12), transparent 30%),
+        linear-gradient(180deg,#f8f3eb 0%, var(--bg) 52%, #efe7da 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height:1.78;
+    }
+    a{color:inherit}
+    .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 70px}
+    .hero{
+      min-height:520px;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:28px;
+      align-items:center;
+      padding:38px 0 28px;
+    }
+    .hero-card,.card{
+      background:rgba(255,250,242,.88);
+      border:1px solid rgba(216,207,193,.86);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .hero-card{padding:38px}
+    .eyebrow{font-size:14px;letter-spacing:.16em;color:var(--accent);font-weight:800;margin-bottom:10px}
+    h1{font-size:48px;line-height:1.12;margin:0 0 20px;letter-spacing:-.04em}
+    h2{font-size:30px;line-height:1.25;margin:0 0 16px;letter-spacing:-.03em}
+    h3{font-size:21px;margin:0 0 10px;letter-spacing:-.02em}
+    p{margin:0 0 14px}
+    .lead{font-size:18px;color:#3c4856;margin-bottom:22px}
+    .tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+    .tag{background:var(--soft);border:1px solid #dfcfba;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:700;color:#5b3c24}
+    .visual{
+      padding:24px;
+      min-height:420px;
+      position:relative;
+      overflow:hidden;
+    }
+    .axisbox{height:360px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}
+    svg{width:100%;height:100%;display:block}
+    .nav{
+      position:sticky;top:0;z-index:10;margin:6px 0 28px;
+      background:rgba(255,250,242,.92);border:1px solid var(--line);border-radius:999px;padding:10px;box-shadow:0 10px 30px rgba(50,35,20,.08);backdrop-filter:blur(8px);
+      display:flex;gap:8px;overflow:auto
+    }
+    .nav a{text-decoration:none;white-space:nowrap;padding:9px 14px;border-radius:999px;font-size:14px;color:#4b5563;font-weight:700}
+    .nav a:hover{background:var(--soft);color:var(--accent)}
+    section{margin:24px 0}
+    .card{padding:28px;margin-bottom:22px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .note{background:#fff7e6;border-left:5px solid #b7791f;padding:16px 18px;border-radius:14px;color:#4a3b22;margin:18px 0}
+    .formula{
+      background:#15212b;color:#f8fafc;border-radius:18px;padding:18px 20px;margin:18px 0;font-family:"SFMono-Regular", Consolas, monospace;overflow:auto;line-height:1.7
+    }
+    .mini{font-size:14px;color:var(--muted)}
+    .pill-title{display:inline-flex;align-items:center;gap:8px;background:var(--green);border:1px solid #bfded6;color:#24595b;border-radius:999px;padding:7px 12px;font-weight:800;font-size:14px;margin-bottom:10px}
+    .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .box{border:1px solid var(--line);border-radius:18px;padding:18px;background:#fff}
+    .box.good{background:#f0fbf8;border-color:#b8ddd5}.box.bad{background:#fff1f1;border-color:#e8b8b8}
+    .step{display:flex;gap:14px;margin:14px 0}.num{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:white;font-weight:900}.step div:last-child{flex:1}
+    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}.control{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}.control label{display:flex;justify-content:space-between;gap:12px;font-size:14px;font-weight:800;color:#405163}.control input[type="range"]{width:100%;accent-color:var(--accent)}
+    .result{background:#eef7f7;border:1px solid #c5e0e0;border-radius:16px;padding:16px;margin-top:14px}.result strong{font-size:26px;color:#24595b}
+    .table{width:100%;border-collapse:collapse;margin-top:14px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}.table th,.table td{border-bottom:1px solid #eadfce;padding:12px 14px;text-align:left}.table th{background:#f2e8d8;color:#5b3c24}.table tr:last-child td{border-bottom:none}
+    .tabs{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;cursor:pointer;font-weight:800;color:#4b5563}.tab.active{background:var(--accent);color:white;border-color:var(--accent)}.tabpane{display:none}.tabpane.active{display:block}
+    .quiz{display:grid;gap:12px}.q{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.q button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 11px;margin:5px 6px 0 0;cursor:pointer}.q button:hover{background:var(--soft)}.feedback{font-weight:800;margin-top:8px}
+    .footer{color:var(--muted);text-align:center;margin-top:38px;font-size:14px}
+    .kbd{font-family:Consolas,monospace;background:#eee3d4;border:1px solid #d9cbb7;border-bottom-width:3px;border-radius:8px;padding:2px 7px;font-size:.92em}
+    .callout{border:1px solid #c8d9ef;background:#f1f7ff;border-radius:18px;padding:18px;margin:18px 0}
+    .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--muted)}.legend span{display:flex;align-items:center;gap:7px}.dot{width:11px;height:11px;border-radius:50%;display:inline-block}.dot.blue{background:#2f6f73}.dot.red{background:#9b2c2c}.dot.gray{background:#94a3b8}
+    @media (max-width:850px){.hero,.grid2,.grid3,.compare,.controls{grid-template-columns:1fr}.hero{min-height:auto}h1{font-size:36px}.wrap{padding:18px 14px 50px}.hero-card,.card{padding:22px}.nav{border-radius:18px}}
+  </style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero" id="top">
+      <div class="hero-card">
+        <div class="eyebrow">REGRESSION DISCONTINUITY DESIGN</div>
+        <h1>断点回归：用一条线附近的“近似随机”识别因果效应</h1>
+        <p class="lead">断点回归的核心不是复杂公式，而是一个非常朴素的反事实想象：如果政策资格由一个明确阈值决定，那么阈值两侧非常接近的案例本来应当差不多；它们在结果上的突然跳跃，就可以被理解为政策带来的局部效应。</p>
+        <div class="tagrow">
+          <span class="tag">反事实</span>
+          <span class="tag">运行变量</span>
+          <span class="tag">阈值</span>
+          <span class="tag">局部可比</span>
+          <span class="tag">结果跳跃</span>
+        </div>
+      </div>
+      <div class="hero-card visual">
+        <div class="pill-title">一眼看懂 RDD</div>
+        <div class="axisbox">
+          <svg id="heroSvg" viewBox="0 0 620 360" aria-label="RDD示意图">
+            <rect x="0" y="0" width="620" height="360" fill="#fff"/>
+            <line x1="55" y1="315" x2="585" y2="315" stroke="#9aa4b2" stroke-width="2"/>
+            <line x1="55" y1="35" x2="55" y2="315" stroke="#9aa4b2" stroke-width="2"/>
+            <line x1="320" y1="35" x2="320" y2="315" stroke="#9b2c2c" stroke-width="3" stroke-dasharray="7 7"/>
+            <text x="322" y="29" fill="#9b2c2c" font-size="16" font-weight="800">断点 c</text>
+            <text x="500" y="345" fill="#4b5563" font-size="14">运行变量 X</text>
+            <text x="12" y="48" fill="#4b5563" font-size="14">结果 Y</text>
+            <path d="M65,260 C130,238 205,220 310,202" fill="none" stroke="#2f6f73" stroke-width="5" stroke-linecap="round"/>
+            <path d="M330,162 C410,142 500,115 575,94" fill="none" stroke="#9b2c2c" stroke-width="5" stroke-linecap="round"/>
+            <line x1="320" y1="202" x2="320" y2="162" stroke="#111827" stroke-width="4" marker-end="url(#arrow)"/>
+            <text x="333" y="187" fill="#111827" font-size="15" font-weight="800">跳跃 = 政策效应</text>
+            <defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#111827"/></marker></defs>
+            <g id="heroDots"></g>
+          </svg>
+        </div>
+        <p class="mini">图中纵向虚线是政策阈值。断点左侧没有处理，右侧接受处理。两侧趋势本来连续，但在阈值处突然跳开，这个“跳跃”就是 RDD 要识别的局部因果效应。</p>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="#intuition">1. 反事实直觉</a>
+      <a href="#structure">2. 三个要素</a>
+      <a href="#interactive">3. 互动演示</a>
+      <a href="#assumptions">4. 核心假设</a>
+      <a href="#types">5. 精确与模糊</a>
+      <a href="#practice">6. 研究怎么做</a>
+      <a href="#risks">7. 常见误区</a>
+      <a href="#quiz">8. 自测</a>
+    </nav>
+
+    <section id="intuition" class="card">
+      <h2>一、断点回归的底层直觉：阈值附近像一次“小型随机实验”</h2>
+      <p>断点回归要解决的是政策评估中最难的问题：处理组接受政策之后，我们看不到它如果没有接受政策时会怎样。RDD 的办法不是去寻找远处的对照组，而是直接在政策门槛附近寻找反事实。因为刚刚低于门槛和刚刚高于门槛的案例通常非常相似，它们只是在是否跨过阈值这一点上不同。</p>
+      <div class="note">把 89.9 分和 90.1 分的学生放在一起比较，比把 60 分和 95 分的学生放在一起比较更可信。前者差别很小，后者本来就可能完全不同。</div>
+      <div class="compare">
+        <div class="box bad">
+          <h3>错误比较：全体高分 vs. 全体低分</h3>
+          <p>高分学生和低分学生可能在能力、努力、家庭背景、学校资源上本来就不同。用它们比较，结果差异很可能不是政策造成的。</p>
+        </div>
+        <div class="box good">
+          <h3>RDD 比较：断点右侧一点点 vs. 左侧一点点</h3>
+          <p>阈值附近的案例几乎一样，唯一明显差别是是否获得处理。因此，断点处结果的突然跳跃更有资格被解释为政策效应。</p>
+        </div>
+      </div>
+      <div class="formula">政策效应 ≈ lim<sub>x↓c</sub> E[Y|X=x] − lim<sub>x↑c</sub> E[Y|X=x]</div>
+      <p>这个表达式的意思是，RDD 比较的不是所有处理组和所有对照组，而是比较断点右侧无限接近阈值的结果均值，与断点左侧无限接近阈值的结果均值。它识别的是断点处的局部跳跃。</p>
+    </section>
+
+    <section id="structure" class="card">
+      <h2>二、RDD 的三个基本要素：运行变量、阈值、处理状态</h2>
+      <p>断点回归成立必须有一个清楚的制度规则：某个连续变量决定案例是否进入处理状态。这个连续变量叫运行变量，分界点叫阈值，阈值两侧是否接受政策处理发生变化。</p>
+      <div class="grid3">
+        <div class="box"><h3>运行变量 X</h3><p>决定资格的连续变量，例如考试分数、人均收入、污染排放量、人口规模、企业规模。</p></div>
+        <div class="box"><h3>断点 c</h3><p>政策规则中的分界线，例如 90 分以上获奖、收入低于标准进入扶持、人口超过门槛获得权限。</p></div>
+        <div class="box"><h3>处理 D</h3><p>是否接受政策处理。断点的一侧进入处理状态，另一侧不进入处理状态，或处理概率发生明显变化。</p></div>
+      </div>
+      <p>RDD 的核心不是“超过阈值的人更好”，而是“刚超过阈值的人和刚没超过阈值的人本来应当差不多”。因此，断点回归的识别单位永远是阈值附近，而不是整个样本。</p>
+    </section>
+
+    <section id="interactive" class="card">
+      <h2>三、互动演示：断点处的跳跃如何变成因果效应</h2>
+      <p>下面这个图可以调节断点位置、政策效应大小和带宽。你可以观察：RDD 真正看的不是整条线，而是断点附近左右两侧的差异；带宽越宽，样本越多，但可比性可能下降；带宽越窄，可比性越强，但估计可能不稳定。</p>
+      <div class="controls">
+        <div class="control"><label>断点 c <span id="cutoffVal">50</span></label><input id="cutoff" type="range" min="35" max="65" value="50"/></div>
+        <div class="control"><label>真实政策效应 τ <span id="tauVal">18</span></label><input id="tau" type="range" min="0" max="40" value="18"/></div>
+        <div class="control"><label>带宽 h <span id="bandVal">18</span></label><input id="band" type="range" min="6" max="35" value="18"/></div>
+      </div>
+      <div class="axisbox" style="height:430px">
+        <svg id="rddSvg" viewBox="0 0 760 420"></svg>
+      </div>
+      <div class="legend"><span><i class="dot blue"></i>断点左侧：未处理</span><span><i class="dot red"></i>断点右侧：处理</span><span><i class="dot gray"></i>浅色区域：当前带宽</span></div>
+      <div class="result">当前断点处估计的跳跃约为：<strong id="jumpText">18.0</strong>。这个数值就是 RDD 试图估计的局部处理效应。</div>
+      <div class="note">关键理解：如果断点两侧的潜在结果本来应当连续，那么断点处的跳跃不能由平滑趋势解释，只能由处理状态突变来解释。</div>
+    </section>
+
+    <section id="assumptions" class="card">
+      <h2>四、RDD 的核心假设：断点处除了处理，其他因素应当连续</h2>
+      <p>断点回归不是只要有阈值就能用。它能识别因果效应，是因为断点附近的案例近似可比。这个可比性依赖两个关键条件：案例不能精准操纵运行变量，其他协变量不能在断点处同时突变。</p>
+      <div class="grid2">
+        <div class="box good">
+          <h3>假设一：不能精准操纵运行变量</h3>
+          <p>如果个体能精确控制自己刚好越过阈值，那么断点两侧的人就不再相似。例如大量学生成绩刚好被调整到 90 分以上，或地方政府精准调指标进入扶持名单，RDD 就会受到威胁。</p>
+        </div>
+        <div class="box good">
+          <h3>假设二：其他因素在断点处连续</h3>
+          <p>如果除了政策处理，其他影响结果的因素也在断点处突然变化，那么结果跳跃就不能归因于政策。例如 90 分以上不仅拿奖学金，还进入重点班，就无法区分哪个处理产生了效果。</p>
+        </div>
+      </div>
+      <div class="callout"><strong>一句话：</strong>RDD 的因果识别来自“断点处只有处理状态发生突变”。如果背景条件也突变，或案例能操纵自己站到阈值右侧，局部随机性就消失了。</div>
+    </section>
+
+    <section id="types" class="card">
+      <h2>五、精确断点与模糊断点：处理状态是“必然变化”还是“概率变化”</h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="sharp">精确断点</button>
+        <button class="tab" data-tab="fuzzy">模糊断点</button>
+        <button class="tab" data-tab="local">局部效应</button>
+      </div>
+      <div id="sharp" class="tabpane active">
+        <p>精确断点是最标准的 RDD。只要运行变量跨过阈值，处理状态就从 0 变成 1。比如分数达到 90 必然获得奖学金，低于 90 必然没有奖学金。此时结果变量在断点处的跳跃，就可以直接解释为处理效应。</p>
+        <div class="formula">D = 1[X ≥ c]</div>
+      </div>
+      <div id="fuzzy" class="tabpane">
+        <p>模糊断点中，阈值并不完全决定处理状态，而是显著改变接受处理的概率。比如收入低于某个标准的地区更可能获得扶持，但并非所有符合标准的地区都获得扶持。此时断点更像一个工具变量，用处理概率的跳跃来识别局部处理效应。</p>
+        <div class="formula">τ<sub>FRD</sub> = 跳跃(Y) / 跳跃(D)</div>
+      </div>
+      <div id="local" class="tabpane">
+        <p>RDD 识别的是断点附近案例的局部平均处理效应，而不是全样本平均效应。用 90 分奖学金门槛估计出来的是 90 分附近学生的奖学金效应，不能直接推广到 60 分或 100 分学生。</p>
+        <div class="note">RDD 的优势是局部识别干净，限制是外推能力有限。</div>
+      </div>
+    </section>
+
+    <section id="practice" class="card">
+      <h2>六、一篇 RDD 研究通常怎么做</h2>
+      <div class="step"><div class="num">1</div><div><h3>找到明确政策规则</h3><p>说明处理资格由哪个连续运行变量和哪个阈值决定，例如分数线、收入线、污染阈值、人口门槛。</p></div></div>
+      <div class="step"><div class="num">2</div><div><h3>画图观察断点跳跃</h3><p>把运行变量放在横轴，结果变量放在纵轴，观察断点处是否存在明显不连续。</p></div></div>
+      <div class="step"><div class="num">3</div><div><h3>选择合适带宽</h3><p>比较断点附近的案例。带宽太宽会降低可比性，带宽太窄会损失样本量。</p></div></div>
+      <div class="step"><div class="num">4</div><div><h3>估计局部线性模型</h3><p>在断点左右分别拟合趋势，估计断点处左极限和右极限之间的差异。</p></div></div>
+      <div class="step"><div class="num">5</div><div><h3>做识别检验</h3><p>检查运行变量是否在断点处异常堆积，协变量是否连续，假断点是否没有效果。</p></div></div>
+      <div class="step"><div class="num">6</div><div><h3>报告局部因果解释</h3><p>把结果表述为“阈值附近案例的局部政策效应”，避免把断点附近结论过度推广到全体样本。</p></div></div>
+    </section>
+
+    <section id="risks" class="card">
+      <h2>七、常见误区：RDD 不是“有阈值就能做”</h2>
+      <table class="table">
+        <thead><tr><th>误区</th><th>为什么有问题</th><th>应该怎么判断</th></tr></thead>
+        <tbody>
+          <tr><td>把远离断点的案例也当成可比对象</td><td>离阈值越远，案例本来差异越大</td><td>聚焦断点附近，并做带宽稳健性</td></tr>
+          <tr><td>只看回归系数，不画断点图</td><td>RDD 的证据首先来自断点处的可视化跳跃</td><td>必须展示 binned scatter 或局部拟合图</td></tr>
+          <tr><td>忽略运行变量操纵</td><td>如果案例能精准跨过阈值，局部随机性消失</td><td>检查运行变量密度是否在断点处异常</td></tr>
+          <tr><td>忽略协变量跳跃</td><td>如果背景变量也跳跃，结果跳跃无法归因于处理</td><td>检验协变量在断点处是否连续</td></tr>
+          <tr><td>把局部效应当成总体效应</td><td>RDD 只识别阈值附近案例的效果</td><td>谨慎讨论外部有效性</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="quiz" class="card">
+      <h2>八、自测：你是否真的理解 RDD</h2>
+      <div class="quiz">
+        <div class="q" data-answer="b"><h3>1. RDD 最核心的比较对象是谁？</h3><button data-opt="a">所有处理组和所有对照组</button><button data-opt="b">断点附近两侧的案例</button><button data-opt="c">政策前和政策后的同一组案例</button><div class="feedback"></div></div>
+        <div class="q" data-answer="a"><h3>2. RDD 识别的效应通常是什么？</h3><button data-opt="a">断点附近的局部处理效应</button><button data-opt="b">全样本平均处理效应</button><button data-opt="c">长期动态政策效应</button><div class="feedback"></div></div>
+        <div class="q" data-answer="c"><h3>3. 哪种情况最严重威胁 RDD？</h3><button data-opt="a">处理组和对照组均值不同</button><button data-opt="b">结果变量有波动</button><button data-opt="c">案例可以精准操纵运行变量跨过断点</button><div class="feedback"></div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>最后一句话</h2>
+      <p>断点回归的本质，是利用政策规则中的临界点，把断点附近几乎相同但处理状态不同的案例拿来比较。它的核心不是回归形式，而是断点附近的局部可比性；它的关键不是控制变量多少，而是断点处是否只有处理发生突变；它的结论不是全样本平均规律，而是阈值附近的局部因果效应。</p>
+    </section>
+
+    <div class="footer">RDD 原理互动讲义 · 单文件版 · 可直接离线打开</div>
+  </div>
+
+<script>
+(function(){
+  const heroDots = document.getElementById('heroDots');
+  let seed = 7;
+  function rand(){ seed = (seed*9301+49297)%233280; return seed/233280; }
+  for(let i=0;i<72;i++){
+    const x = 70 + rand()*500;
+    const right = x>=320;
+    const base = 280 - 0.34*(x-70) + (right ? -38 : 0) + (rand()-.5)*24;
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',base); c.setAttribute('r',4.2);
+    c.setAttribute('fill', right?'#9b2c2c':'#2f6f73'); c.setAttribute('opacity','.72');
+    heroDots.appendChild(c);
+  }
+})();
+
+const cutoff = document.getElementById('cutoff');
+const tau = document.getElementById('tau');
+const band = document.getElementById('band');
+const cutoffVal = document.getElementById('cutoffVal');
+const tauVal = document.getElementById('tauVal');
+const bandVal = document.getElementById('bandVal');
+const jumpText = document.getElementById('jumpText');
+const svg = document.getElementById('rddSvg');
+
+function xScale(x){ return 60 + x/100*640; }
+function yScale(y){ return 360 - y/110*300; }
+function drawRDD(){
+  const c = +cutoff.value, t = +tau.value, h = +band.value;
+  cutoffVal.textContent = c; tauVal.textContent = t; bandVal.textContent = h; jumpText.textContent = t.toFixed(1);
+  svg.innerHTML = '';
+  const NS='http://www.w3.org/2000/svg';
+  function el(name, attrs){ const n=document.createElementNS(NS,name); for(const k in attrs)n.setAttribute(k,attrs[k]); svg.appendChild(n); return n; }
+  el('rect',{x:0,y:0,width:760,height:420,fill:'#fff'});
+  el('line',{x1:60,y1:360,x2:700,y2:360,stroke:'#9aa4b2','stroke-width':2});
+  el('line',{x1:60,y1:50,x2:60,y2:360,stroke:'#9aa4b2','stroke-width':2});
+  const cx=xScale(c), left=xScale(Math.max(0,c-h)), right=xScale(Math.min(100,c+h));
+  el('rect',{x:left,y:50,width:right-left,height:310,fill:'#e5e7eb',opacity:.52});
+  el('line',{x1:cx,y1:50,x2:cx,y2:360,stroke:'#9b2c2c','stroke-width':3,'stroke-dasharray':'8 7'});
+  el('text',{x:cx+8,y:42,fill:'#9b2c2c','font-size':16,'font-weight':800}).textContent='断点 c';
+  el('text',{x:622,y:392,fill:'#4b5563','font-size':14}).textContent='运行变量 X';
+  el('text',{x:18,y:62,fill:'#4b5563','font-size':14}).textContent='结果 Y';
+  function baseY(x){ return 22 + .48*x + 5*Math.sin(x/14); }
+  let dLeft='', dRight='';
+  for(let x=0; x<=100; x+=1){
+    const y=baseY(x)+(x>=c?t:0); const p=(x===0?'M':'L')+xScale(x)+','+yScale(y);
+    if(x<c) dLeft += p; else dRight += p;
+  }
+  el('path',{d:dLeft,fill:'none',stroke:'#2f6f73','stroke-width':4,'stroke-linecap':'round'});
+  el('path',{d:dRight,fill:'none',stroke:'#9b2c2c','stroke-width':4,'stroke-linecap':'round'});
+  const yL = yScale(baseY(c)); const yR = yScale(baseY(c)+t);
+  el('line',{x1:cx,y1:yL,x2:cx,y2:yR,stroke:'#111827','stroke-width':4});
+  el('circle',{cx:cx,cy:yL,r:6,fill:'#2f6f73'}); el('circle',{cx:cx,cy:yR,r:6,fill:'#9b2c2c'});
+  el('text',{x:cx+12,y:(yL+yR)/2,fill:'#111827','font-size':15,'font-weight':800}).textContent='跳跃 τ';
+  let s=3;
+  function rnd(){ s=(s*9301+49297)%233280; return s/233280; }
+  for(let i=0;i<135;i++){
+    const x=rnd()*100; const treated=x>=c; const y=baseY(x)+(treated?t:0)+(rnd()-.5)*14;
+    el('circle',{cx:xScale(x),cy:yScale(y),r:3.3,fill:treated?'#9b2c2c':'#2f6f73',opacity:.62});
+  }
+}
+[cutoff,tau,band].forEach(i=>i.addEventListener('input',drawRDD));
+drawRDD();
+
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
+  })
+});
+
+document.querySelectorAll('.q button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const q=btn.closest('.q'); const fb=q.querySelector('.feedback');
+    const ok=btn.dataset.opt===q.dataset.answer;
+    fb.textContent=ok?'回答正确：RDD 的关键是断点附近的局部比较。':'再想一想：RDD 依赖阈值附近案例的局部可比性。';
+    fb.style.color=ok?'#2f6f73':'#9b2c2c';
+  })
+});
+</script>
+</body>
+</html>

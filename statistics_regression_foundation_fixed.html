@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>统计与回归底座：社会科学实证研究必须掌握的基础</title>
+<style>
+:root{
+  --bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;
+  --green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--red:#9f3f3f;--blue:#3f668f;
+  --soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf;--soft4:#f7e7e7;--soft5:#e7eef5
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:58px 22px 30px}
+.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:800;font-size:13px;letter-spacing:.08em}
+h1{max-width:1120px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}
+.subtitle{max-width:980px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1180px,92vw);margin:0 auto 70px}
+.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}
+.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}
+h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}
+h3{margin:16px 0 8px;font-size:20px}
+p{margin:10px 0;color:#2c2d2f}
+.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}
+.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}.soft4{background:var(--soft4)}.soft5{background:var(--soft5)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}
+.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.nodebox{min-width:130px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}
+.nodebox.purple{border-color:var(--purple);color:var(--purple)}.nodebox.orange{border-color:var(--orange);color:var(--orange)}.nodebox.red{border-color:var(--red);color:var(--red)}.nodebox.blue{border-color:var(--blue);color:var(--blue)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}
+.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}
+th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.tabs,.btns{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.tab,.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}
+.tab.active,.btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.panel{display:none}.panel.active{display:block}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}
+label{display:block;font-weight:750}
+input[type=range]{width:100%}
+.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}
+.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}
+.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:390px;background:#fff;border:1px solid var(--line);border-radius:20px}
+.note{font-size:14px;color:var(--muted)}
+.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}
+.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}
+.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}
+@media(max-width:900px){.grid,.grid3,.grid4,.controls,.output{grid-template-columns:1fr}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">STATISTICS & REGRESSION FOUNDATION</span>
+<h1>统计与回归底座：社会科学实证研究必须精通的基础知识</h1>
+<p class="subtitle">修复版：已重写交互图脚本，避免后面几个图示空白。高级方法背后都离不开基础统计。大数定律、中心极限定理、抽样误差、假设检验、两类错误、测量层次、信度效度和回归模型，是理解 DID、RDD、IV、PSM、HLM 和 DML 的底层语言。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#map">知识地图</a><a href="#research">定量研究逻辑</a><a href="#measurement">测量与操作化</a><a href="#sampling">抽样与统计推论</a><a href="#lln">大数定律</a><a href="#clt">中心极限定理</a><a href="#hypothesis">假设检验</a><a href="#errors">两类错误</a><a href="#descriptive">描述统计</a><a href="#tests">基础检验</a><a href="#regression">线性回归</a><a href="#models">模型选择</a><a href="#assumptions">回归诊断</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="map">
+<h2>一、知识地图：统计与回归底座要解决四个问题</h2>
+<p class="lead">统计基础不是公式堆砌，而是一套把经验材料转化为可推断知识的语言。社会科学定量研究通常经过四步：把概念变成变量，把总体变成样本，把样本信息推回总体，把变量关系放进模型。</p>
+<div class="diagram">
+<div class="nodebox">概念</div><div class="arrow"></div><div class="nodebox purple">测量</div><div class="arrow"></div><div class="nodebox orange">抽样</div><div class="arrow"></div><div class="nodebox blue">推论</div><div class="arrow"></div><div class="nodebox red">模型</div>
+</div>
+<div class="grid4">
+<div class="card soft"><span class="tag">测量</span><h3>研究对象如何数字化</h3><p>概念、变量、操作化、测量层次、信度、效度。</p></div>
+<div class="card soft2"><span class="tag">抽样</span><h3>样本如何代表总体</h3><p>总体、样本、抽样框、概率抽样、抽样误差。</p></div>
+<div class="card soft3"><span class="tag">推论</span><h3>样本如何推回总体</h3><p>大数定律、中心极限定理、标准误、置信区间、假设检验。</p></div>
+<div class="card soft4"><span class="tag">建模</span><h3>变量关系如何估计</h3><p>t 检验、方差分析、卡方、相关、OLS、Logit/Probit。</p></div>
+</div>
+<div class="quote">一句话记住：统计基础的核心，是用样本中的不完美信息，对总体中的不确定关系作出有边界的判断。</div>
+</section>
+
+<section id="research">
+<h2>二、定量研究逻辑：从概念到假设，再到可检验模型</h2>
+<p>社会科学定量研究以经验资料为基础，追求在限定对象、时间和范围内进行描述、解释和预测。它不是把社会现象简单变成数字，而是通过测量、抽样和模型，把抽象理论转化为可检验命题。</p>
+<table>
+<tr><th>环节</th><th>含义</th><th>例子</th></tr>
+<tr><td>概念</td><td>社会现象的抽象化表述</td><td>政治信任、治理效能、参与意愿、社会资本</td></tr>
+<tr><td>理论</td><td>解释概念之间关系的命题体系</td><td>政治信任提高参与意愿</td></tr>
+<tr><td>变量</td><td>概念的可观察表达</td><td>信任量表得分、参与频率、满意度评分</td></tr>
+<tr><td>假设</td><td>变量关系的可检验陈述</td><td>政治信任越高，基层参与意愿越高</td></tr>
+<tr><td>模型</td><td>用统计语言估计变量关系</td><td>参与意愿 = a + b×政治信任 + 控制变量</td></tr>
+</table>
+<div class="grid3">
+<div class="card soft"><span class="tag">原假设 H0</span><p>变量之间没有关系，统计检验通常试图拒绝它。</p></div>
+<div class="card soft2"><span class="tag">相关假设</span><p>变量之间存在关系，但不明确方向。</p></div>
+<div class="card soft3"><span class="tag">方向性假设</span><p>明确提出正向或负向关系，是论文中最常见的假设形式。</p></div>
+</div>
+</section>
+
+<section id="measurement">
+<h2>三、测量与操作化：模型之前，先把变量做对</h2>
+<p>测量是根据规则，把对象或现象的属性用数字或符号表示。操作化是把抽象概念转化为具体指标的过程。很多实证研究的问题，不是模型不高级，而是概念没有被正确测量。</p>
+<table>
+<tr><th>测量层次</th><th>能做什么</th><th>数学关系</th><th>例子</th><th>常用分析</th></tr>
+<tr><td>定类</td><td>区分类别</td><td>等于/不等于</td><td>性别、地区、户籍、党派</td><td>频数、比例、卡方、虚拟变量</td></tr>
+<tr><td>定序</td><td>区分类别并排序</td><td>大于/小于</td><td>满意度等级、教育层次、认同强弱</td><td>中位数、秩和检验、Ordered Logit</td></tr>
+<tr><td>定距</td><td>有相等间距但无绝对零点</td><td>加减</td><td>摄氏温度、指数化得分</td><td>均值、标准差、回归</td></tr>
+<tr><td>定比</td><td>有绝对零点</td><td>加减乘除</td><td>收入、年龄、人口、财政支出</td><td>均值、比率、回归、取对数</td></tr>
+</table>
+<div class="grid">
+<div class="card soft"><span class="tag">信度</span><h3>测量是否稳定一致</h3><p>同一工具重复测量是否得到一致结果。问卷量表常用 Cronbach’s α 检验内部一致性。</p></div>
+<div class="card soft2"><span class="tag">效度</span><h3>测量是否真的测到概念</h3><p>指标是否反映概念真实含义。常见检验包括内容效度、结构效度、因子分析等。</p></div>
+</div>
+<div class="formula">观察值 = 真实值 + 误差<br>随机误差：均值趋近于 0，影响精度。<br>系统误差：方向性偏误，影响准确性，必须尽量消除。</div>
+</section>
+
+<section id="sampling">
+<h2>四、抽样与统计推论：为什么样本可以推总体</h2>
+<p>总体是研究对象的完整集合，样本是从总体中实际观察到的一部分。抽样的目的，是用样本推断总体。概率抽样能够让每个单位有已知概率被抽中，因此更适合做统计推论；非概率抽样适合探索性研究，但外推能力较弱。</p>
+<table>
+<tr><th>抽样类型</th><th>含义</th><th>适用情况</th></tr>
+<tr><td>简单随机抽样</td><td>总体中每个单位有相同概率被抽中</td><td>总体名单清楚</td></tr>
+<tr><td>系统抽样</td><td>按固定间隔抽取样本</td><td>有完整抽样框</td></tr>
+<tr><td>分层抽样</td><td>先按重要特征分层，再在层内抽样</td><td>需要保证城乡、性别、年龄等结构</td></tr>
+<tr><td>整群抽样</td><td>随机抽取若干群体，再调查群体内单位</td><td>总体分散、逐个抽取成本高</td></tr>
+<tr><td>多段抽样</td><td>分阶段逐级抽样</td><td>大型社会调查</td></tr>
+<tr><td>便利/滚雪球/定额抽样</td><td>非概率抽样</td><td>难以获得抽样框、探索性研究、特殊群体研究</td></tr>
+</table>
+<div class="quote">抽样推论的关键不是样本越大越好，而是样本如何被抽出。样本规模影响精度，抽样机制影响偏误。</div>
+</section>
+
+<section id="lln">
+<h2>五、大数定律：样本越大，样本均值越接近总体均值</h2>
+<p>大数定律说明，如果样本是随机抽取的，随着样本量增加，样本均值会越来越接近总体均值。它是“用样本估计总体”的基础。</p>
+<div class="formula">样本均值 x̄  →  总体均值 μ<br>当 n 越大，随机误差越容易相互抵消。</div>
+<div class="controls">
+<div><label>样本量 n <span class="value" id="nVal">30</span></label><input id="nLLN" type="range" min="5" max="1000" step="5" value="30"></div>
+<div><label>总体真实均值 μ <span class="value">50</span></label><input type="range" min="0" max="1" value="0" disabled></div>
+<div><label>随机波动</label><input type="range" min="0" max="1" value="0" disabled></div>
+</div>
+<canvas id="llnCanvas" width="900" height="390"></canvas>
+<div class="output">
+<div class="metric"><span>样本均值</span><strong id="sampleMeanOut">0</strong></div>
+<div class="metric"><span>总体均值</span><strong>50</strong></div>
+<div class="metric"><span>误差</span><strong id="errOut">0</strong></div>
+</div>
+<p class="note">注意：大数定律只能处理随机误差，不能自动处理系统性偏误。如果样本本身有偏，样本再大也可能错。</p>
+</section>
+
+<section id="clt">
+<h2>六、中心极限定理：样本均值的分布会趋近正态</h2>
+<p>中心极限定理说明，不管原始变量分布多么奇怪，只要样本量足够大，重复抽样得到的样本均值会近似服从正态分布。它是置信区间、标准误、t 检验和回归显著性检验的基础。</p>
+<div class="formula">x̄ 近似服从 N( μ, σ²/n )<br>标准误 SE = σ / √n</div>
+<div class="controls">
+<div><label>每次抽样样本量 <span class="value" id="cltNVal">30</span></label><input id="cltN" type="range" min="2" max="100" step="1" value="30"></div>
+<div><label>重复抽样次数 <span class="value" id="repVal">300</span></label><input id="rep" type="range" min="50" max="1000" step="50" value="300"></div>
+<div><label>原始分布：偏态</label><input type="range" min="0" max="1" value="0" disabled></div>
+</div>
+<canvas id="cltCanvas" width="900" height="390"></canvas>
+<div class="output">
+<div class="metric"><span>样本量</span><strong id="cltNOut">30</strong></div>
+<div class="metric"><span>标准误趋势</span><strong id="seOut">下降</strong></div>
+<div class="metric"><span>推论基础</span><strong>正态近似</strong></div>
+</div>
+</section>
+
+<section id="hypothesis">
+<h2>七、假设检验：不是证明 H1，而是看能否拒绝 H0</h2>
+<p>假设检验的基本逻辑是：先假设没有效应或没有关系，即原假设 H0；然后看样本结果在 H0 成立时是否足够罕见。如果足够罕见，就拒绝 H0。</p>
+<div class="diagram">
+<div class="nodebox">设定 H0</div><div class="arrow"></div><div class="nodebox purple">计算统计量</div><div class="arrow"></div><div class="nodebox orange">得到 p 值</div><div class="arrow"></div><div class="nodebox red">拒绝或不拒绝 H0</div>
+</div>
+<table>
+<tr><th>概念</th><th>含义</th><th>常见误解</th></tr>
+<tr><td>显著性水平 α</td><td>愿意承担的一类错误概率，常用 0.05</td><td>不是结果真实的概率</td></tr>
+<tr><td>p 值</td><td>在 H0 成立时，观察到当前或更极端数据的概率</td><td>不是 H0 为真的概率</td></tr>
+<tr><td>置信区间</td><td>在重复抽样中，按该方法构造的区间有一定比例覆盖真值</td><td>不是“真值有 95% 概率在这个区间”</td></tr>
+<tr><td>统计显著</td><td>数据与 H0 不太相容</td><td>不等于实际影响重要</td></tr>
+</table>
+<div class="quote">显著性检验回答的是“样本证据是否足以反对原假设”，不是“理论是否被证明”。</div>
+</section>
+
+<section id="errors">
+<h2>八、两类错误：显著性和功效之间的权衡</h2>
+<p>统计决策可能犯错。一类错误是 H0 真实却错误拒绝，二类错误是 H0 错误却没有拒绝。社会科学研究中，样本量太小、噪声太大、效应太弱时，很容易出现二类错误。</p>
+<table>
+<tr><th></th><th>H0 真实</th><th>H0 错误</th></tr>
+<tr><td>拒绝 H0</td><td>一类错误：假阳性</td><td>正确发现效应</td></tr>
+<tr><td>不拒绝 H0</td><td>正确不拒绝</td><td>二类错误：假阴性</td></tr>
+</table>
+<div class="controls">
+<div><label>显著性水平 α <span class="value" id="alphaVal">0.05</span></label><input id="alpha" type="range" min="0.01" max="0.2" step="0.01" value="0.05"></div>
+<div><label>真实效应大小 <span class="value" id="effectVal">0.50</span></label><input id="effect" type="range" min="0.05" max="1.5" step="0.05" value="0.5"></div>
+<div><label>样本量 n <span class="value" id="powerNVal">80</span></label><input id="powerN" type="range" min="20" max="500" step="10" value="80"></div>
+</div>
+<canvas id="errorCanvas" width="900" height="390"></canvas>
+<div class="output">
+<div class="metric"><span>一类错误 α</span><strong id="alphaOut">0.05</strong></div>
+<div class="metric"><span>统计功效</span><strong id="powerOut">0.00</strong></div>
+<div class="metric"><span>二类错误 β</span><strong id="betaOut">0.00</strong></div>
+</div>
+</section>
+
+<section id="descriptive">
+<h2>九、描述统计：先看分布，再谈模型</h2>
+<p>描述统计用于概括数据分布。建模前必须先看均值、中位数、标准差、最小值、最大值、缺失值和异常值。很多实证错误不是模型导致的，而是研究者没有看清楚变量分布。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">集中趋势</span><h3>数据集中在哪里</h3><p>平均数受极端值影响，中位数更稳健，众数适合类别变量。</p></div>
+<div class="card soft2"><span class="tag">离散趋势</span><h3>数据分散程度</h3><p>全距、四分位差、方差、标准差衡量变量波动大小。</p></div>
+</div>
+<table>
+<tr><th>先看什么</th><th>为什么重要</th></tr>
+<tr><td>缺失值</td><td>缺失是否随机会影响估计偏误</td></tr>
+<tr><td>异常值</td><td>极端值可能主导均值和回归斜率</td></tr>
+<tr><td>分布形态</td><td>偏态变量可能需要取对数或换模型</td></tr>
+<tr><td>变量编码</td><td>方向是否一致，数值越高是否代表概念越强</td></tr>
+</table>
+</section>
+
+<section id="tests">
+<h2>十、基础检验：先根据变量类型选方法</h2>
+<p>统计方法选择首先取决于变量类型。连续变量、类别变量、等级变量和计数变量不能随便混用同一种模型。</p>
+<table>
+<tr><th>问题</th><th>变量类型</th><th>常用方法</th><th>核心解释</th></tr>
+<tr><td>一个样本均值是否不同于某个值</td><td>连续因变量</td><td>单样本 t 检验</td><td>样本均值与理论值/参照值是否不同</td></tr>
+<tr><td>同一对象前后是否变化</td><td>连续因变量</td><td>配对样本 t 检验</td><td>处理前后均值是否不同</td></tr>
+<tr><td>两组均值是否不同</td><td>连续因变量 + 二分类自变量</td><td>独立样本 t 检验</td><td>两组平均水平是否不同</td></tr>
+<tr><td>三组以上均值是否不同</td><td>连续因变量 + 多分类自变量</td><td>方差分析 ANOVA</td><td>不同组均值是否存在整体差异</td></tr>
+<tr><td>两个类别变量是否有关联</td><td>类别变量</td><td>卡方检验</td><td>分类分布是否独立</td></tr>
+<tr><td>两个连续变量是否线性相关</td><td>连续变量</td><td>Pearson 相关</td><td>线性关系方向和强度</td></tr>
+</table>
+<div class="quote">t 检验、ANOVA、卡方、相关分析，本质上都是进入回归模型之前的基础关系判断。</div>
+</section>
+
+<section id="regression">
+<h2>十一、线性回归：用一条线估计变量之间的平均关系</h2>
+<p>线性回归估计的是在其他条件不变时，X 每增加一个单位，Y 平均变化多少。OLS 的核心是最小化残差平方和，让拟合线尽量接近所有观察点。</p>
+<div class="formula">Y = a + bX + e<br>a：截距，X=0 时 Y 的预测值。<br>b：斜率，X 每增加 1 单位，Y 平均变化 b 单位。</div>
+<div class="controls">
+<div><label>斜率 b <span class="value" id="slopeVal">0.80</span></label><input id="slope" type="range" min="-2" max="2" step="0.1" value="0.8"></div>
+<div><label>噪声 <span class="value" id="regNoiseVal">1.00</span></label><input id="regNoise" type="range" min="0.1" max="3" step="0.1" value="1"></div>
+<div><label>样本量 <span class="value" id="regNVal">80</span></label><input id="regN" type="range" min="20" max="300" step="10" value="80"></div>
+</div>
+<canvas id="regCanvas" width="900" height="390"></canvas>
+<div class="output">
+<div class="metric"><span>估计斜率</span><strong id="bOut">0.00</strong></div>
+<div class="metric"><span>R²</span><strong id="r2Out">0.00</strong></div>
+<div class="metric"><span>解释</span><strong>平均关系</strong></div>
+</div>
+<table>
+<tr><th>指标</th><th>含义</th><th>注意</th></tr>
+<tr><td>非标准化系数 B</td><td>X 增加 1 单位时，Y 变化多少</td><td>用于实际解释和预测</td></tr>
+<tr><td>标准化系数 Beta</td><td>X 增加 1 个标准差时，Y 变化多少标准差</td><td>可比较不同自变量相对影响</td></tr>
+<tr><td>R²</td><td>模型解释了因变量变异的比例</td><td>高 R² 不等于因果成立</td></tr>
+<tr><td>调整后 R²</td><td>惩罚过多自变量后的解释力</td><td>多元回归更应看调整后 R²</td></tr>
+</table>
+</section>
+
+<section id="models">
+<h2>十二、模型选择：因变量类型决定基础模型</h2>
+<p>模型不是越复杂越好，而是要和因变量类型匹配。连续结果用 OLS，二分类结果用 Logit/Probit，等级结果用 Ordered Logit，计数结果用 Poisson 或负二项模型。</p>
+<table>
+<tr><th>因变量类型</th><th>例子</th><th>基础模型</th><th>解释重点</th></tr>
+<tr><td>连续变量</td><td>满意度得分、信任得分、财政支出</td><td>OLS</td><td>X 每增加一单位，Y 平均变化多少</td></tr>
+<tr><td>二分类变量</td><td>是否参与、是否满意、是否投诉</td><td>Logit / Probit</td><td>X 如何改变事件发生概率或胜算</td></tr>
+<tr><td>等级变量</td><td>非常不同意到非常同意</td><td>Ordered Logit / Ordered Probit</td><td>X 如何改变进入更高等级的可能性</td></tr>
+<tr><td>计数变量</td><td>投诉次数、会议次数、政策数量</td><td>Poisson / 负二项</td><td>X 如何改变事件发生次数</td></tr>
+<tr><td>截断/受限变量</td><td>大量 0 或被限制范围的数据</td><td>Tobit 或两部模型</td><td>处理受限观测造成的分布问题</td></tr>
+</table>
+<div class="formula">Logit 模型解释：<br>B：X 增加 1 单位，胜算对数变化 B。<br>Exp(B)：胜算比。Exp(B)>1 表示事件发生胜算提高，Exp(B)<1 表示降低。</div>
+</section>
+
+<section id="assumptions">
+<h2>十三、回归诊断：基础模型要经得起基本检查</h2>
+<p>回归不是跑出显著星号就结束。要检查模型设定、变量编码、样本结构、标准误和替代解释。</p>
+<div class="grid3">
+<div class="card soft"><span class="tag">线性关系</span><p>OLS 假设 X 和 Y 的条件均值关系近似线性。非线性可能需要加入二次项、分段项或换模型。</p></div>
+<div class="card soft2"><span class="tag">独立性</span><p>观察值不应高度相关。面板数据、社区嵌套数据需要固定效应、聚类标准误或多层模型。</p></div>
+<div class="card soft3"><span class="tag">同方差</span><p>误差方差应相对稳定。异方差会影响标准误，常用稳健标准误处理。</p></div>
+<div class="card soft4"><span class="tag">多重共线性</span><p>自变量高度相关会导致系数不稳定、标准误变大，常用 VIF 检查。</p></div>
+<div class="card soft5"><span class="tag">内生性</span><p>遗漏变量、反向因果、测量误差会使系数偏误，需要研究设计解决。</p></div>
+<div class="card"><span class="tag">异常值</span><p>少数极端点可能显著改变回归斜率，需要诊断和稳健性检验。</p></div>
+</div>
+<div class="quote">回归系数能不能解释为因果，不取决于模型多复杂，而取决于研究设计能否排除替代解释。</div>
+</section>
+
+<section id="quiz">
+<h2>十四、自测：这些问题要真正精通</h2>
+<div class="qa"><strong>问题 1：</strong>大数定律和中心极限定理分别解决什么问题？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">大数定律说明样本量越大，样本均值越接近总体均值；中心极限定理说明重复抽样的样本均值分布会近似正态，因此可以进行标准误、置信区间和显著性检验。</div></div>
+<div class="qa"><strong>问题 2：</strong>p 值是不是原假设为真的概率？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">不是。p 值是在原假设成立时，观察到当前或更极端数据的概率。</div></div>
+<div class="qa"><strong>问题 3：</strong>一类错误和二类错误分别是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">一类错误是假阳性，即原假设为真却错误拒绝；二类错误是假阴性，即原假设为假却没有拒绝。</div></div>
+<div class="qa"><strong>问题 4：</strong>为什么不能只看显著性？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">显著性受样本量、标准误和噪声影响。统计显著不等于实际重要，也不等于因果成立，还要看效应大小、研究设计、机制和稳健性。</div></div>
+<div class="qa"><strong>问题 5：</strong>什么时候不能直接用 OLS？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">当因变量是二分类、等级、计数、受限变量，或者数据存在明显嵌套、面板结构、内生性和非线性时，直接 OLS 可能不合适。</div></div>
+</section>
+</main>
+
+<div class="footer">一句话记住：统计与回归底座不是“会跑模型”，而是知道数据如何被测量、样本如何推总体、显著性如何产生、模型如何选择、系数能否被解释。</div>
+
+
+<script>
+(function(){
+function $(id){return document.getElementById(id);}
+function fmt(x){return (Math.round(Number(x)*100)/100).toFixed(2);}
+function seededNoise(i){var x=Math.sin(i*9301+49297)*233280;return x-Math.floor(x);}
+function normalFromSeed(i){var u=Math.max(seededNoise(i),1e-6);var v=seededNoise(i+999);return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function clearCanvas(id){
+  var c=$(id);
+  if(!c || !c.getContext){return null;}
+  var ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.setLineDash([]);
+  ctx.globalAlpha=1;
+  ctx.lineWidth=1;
+  ctx.font="15px sans-serif";
+  ctx.textAlign="left";
+  return ctx;
+}
+function drawFallback(ctx,msg){
+  ctx.fillStyle="#9f3f3f";
+  ctx.font="16px sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(msg,450,195);
+}
+function safe(fn,id){
+  try{fn();}
+  catch(e){
+    var ctx=clearCanvas(id);
+    if(ctx){drawFallback(ctx,"图示加载失败，请刷新页面或调整滑块重试。");}
+    if(window.console){console.error(e);}
+  }
+}
+
+function drawLLN(){
+  var n=Number($("nLLN").value);
+  $("nVal").textContent=n;
+  var cum=0, pts=[];
+  for(var i=1;i<=n;i++){
+    var val=50+15*normalFromSeed(i);
+    cum+=val;
+    pts.push(cum/i);
+  }
+  var mean=pts[pts.length-1],err=mean-50;
+  $("sampleMeanOut").textContent=fmt(mean);
+  $("errOut").textContent=fmt(err);
+  var ctx=clearCanvas("llnCanvas"); if(!ctx)return;
+  var left=60,right=840,top=40,bottom=300;
+  function mx(i){return left+(i-1)/Math.max(1,n-1)*(right-left);}
+  function my(v){return bottom-(v-25)/50*(bottom-top);}
+  ctx.strokeStyle="#ddd6c7";
+  for(var k=0;k<=5;k++){var y=top+k*(bottom-top)/5;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();}
+  ctx.strokeStyle="#9f3f3f";ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(left,my(50));ctx.lineTo(right,my(50));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle="#2f6f5e";ctx.lineWidth=3;ctx.beginPath();
+  for(var j=0;j<pts.length;j++){if(j===0)ctx.moveTo(mx(j+1),my(pts[j]));else ctx.lineTo(mx(j+1),my(pts[j]));}
+  ctx.stroke();
+  ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";
+  ctx.fillText("绿色线是累计样本均值，红色虚线是真实总体均值。样本量越大，随机误差越容易抵消。",450,350);
+}
+
+function drawCLT(){
+  var n=Number($("cltN").value), reps=Number($("rep").value);
+  $("cltNVal").textContent=n;$("repVal").textContent=reps;$("cltNOut").textContent=n;$("seOut").textContent=n>=30?"下降":"偏大";
+  var means=[];
+  for(var r=0;r<reps;r++){
+    var s=0;
+    for(var i=0;i<n;i++){
+      var u=Math.max(seededNoise(r*1000+i),1e-6);
+      var val=-Math.log(u)*20;
+      s+=val;
+    }
+    means.push(s/n);
+  }
+  var ctx=clearCanvas("cltCanvas"); if(!ctx)return;
+  var bins=28,min=0,max=60,hist=[];
+  for(var h=0;h<bins;h++){hist[h]=0;}
+  for(var m=0;m<means.length;m++){
+    var b=Math.floor((means[m]-min)/(max-min)*bins);
+    if(b<0)b=0;if(b>=bins)b=bins-1;
+    hist[b]+=1;
+  }
+  var maxh=1;
+  for(var q=0;q<hist.length;q++){if(hist[q]>maxh)maxh=hist[q];}
+  var left=65,right=835,top=45,bottom=300,barw=(right-left)/bins;
+  ctx.strokeStyle="#ddd6c7";
+  for(var gy=0;gy<=5;gy++){var yy=top+gy*(bottom-top)/5;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke();}
+  for(var bi=0;bi<bins;bi++){
+    var bh=hist[bi]/maxh*(bottom-top);
+    ctx.fillStyle="#2f6f5e";ctx.globalAlpha=.82;
+    ctx.fillRect(left+bi*barw,bottom-bh,Math.max(1,barw-2),bh);
+  }
+  ctx.globalAlpha=1;
+  ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";
+  ctx.fillText("直方图展示重复抽样得到的样本均值。n 越大，样本均值越集中，形态越接近正态。",450,350);
+}
+
+function erf(x){
+  var sign=x>=0?1:-1;x=Math.abs(x);
+  var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  var t=1/(1+p*x);
+  var y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return sign*y;
+}
+function normCdf(x){return 0.5*(1+erf(x/Math.sqrt(2)));}
+function zcrit(alpha){
+  var target=1-alpha/2,lo=0,hi=4;
+  for(var i=0;i<50;i++){var mid=(lo+hi)/2;if(normCdf(mid)<target)lo=mid;else hi=mid;}
+  return (lo+hi)/2;
+}
+function drawErrors(){
+  var alpha=Number($("alpha").value),effect=Number($("effect").value),n=Number($("powerN").value);
+  $("alphaVal").textContent=fmt(alpha);$("effectVal").textContent=fmt(effect);$("powerNVal").textContent=n;$("alphaOut").textContent=fmt(alpha);
+  var se=1/Math.sqrt(n/40),zc=zcrit(alpha),crit=zc*se;
+  var power=1-(normCdf((crit-effect)/se)-normCdf((-crit-effect)/se));
+  if(power<0)power=0;if(power>1)power=1;
+  var beta=1-power;
+  $("powerOut").textContent=fmt(power);$("betaOut").textContent=fmt(beta);
+  var ctx=clearCanvas("errorCanvas"); if(!ctx)return;
+  var left=70,right=830,top=45,bottom=300;
+  function mx(x){return left+(x+2.5)/5*(right-left);}
+  function my(y){return bottom-y*220;}
+  function pdf(x,mu){return Math.exp(-0.5*Math.pow((x-mu)/se,2))/(se*Math.sqrt(2*Math.PI));}
+  ctx.strokeStyle="#ddd6c7";
+  for(var gy=0;gy<=5;gy++){var yy=top+gy*(bottom-top)/5;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke();}
+  ctx.strokeStyle="#7b4b9a";ctx.lineWidth=3;ctx.beginPath();
+  for(var i=0;i<=400;i++){var x=-2.5+i*5/400,y=pdf(x,0);if(i===0)ctx.moveTo(mx(x),my(y));else ctx.lineTo(mx(x),my(y));}
+  ctx.stroke();
+  ctx.strokeStyle="#2f6f5e";ctx.lineWidth=3;ctx.beginPath();
+  for(var j=0;j<=400;j++){var x2=-2.5+j*5/400,y2=pdf(x2,effect);if(j===0)ctx.moveTo(mx(x2),my(y2));else ctx.lineTo(mx(x2),my(y2));}
+  ctx.stroke();
+  ctx.strokeStyle="#9f3f3f";ctx.setLineDash([5,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx(-crit),top);ctx.lineTo(mx(-crit),bottom);ctx.moveTo(mx(crit),top);ctx.lineTo(mx(crit),bottom);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#7b4b9a";ctx.font="bold 14px sans-serif";ctx.textAlign="left";ctx.fillText("H0 分布",mx(-1.4),70);
+  ctx.fillStyle="#2f6f5e";ctx.fillText("真实效应分布",mx(effect+.5),95);
+  ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";
+  ctx.fillText("红线外是拒绝域；α 控制假阳性，样本量和效应大小影响统计功效。",450,350);
+}
+
+function drawReg(){
+  var b=Number($("slope").value),noise=Number($("regNoise").value),n=Number($("regN").value);
+  $("slopeVal").textContent=fmt(b);$("regNoiseVal").textContent=fmt(noise);$("regNVal").textContent=n;
+  var pts=[];
+  for(var i=0;i<n;i++){
+    var x=(seededNoise(i)-.5)*8;
+    var y=1+b*x+normalFromSeed(i+300)*noise;
+    pts.push({x:x,y:y});
+  }
+  var sx=0,sy=0;
+  for(var p=0;p<pts.length;p++){sx+=pts[p].x;sy+=pts[p].y;}
+  sx/=n;sy/=n;
+  var sxx=0,sxy=0,syy=0;
+  for(var q=0;q<pts.length;q++){
+    sxx+=(pts[q].x-sx)*(pts[q].x-sx);
+    sxy+=(pts[q].x-sx)*(pts[q].y-sy);
+    syy+=(pts[q].y-sy)*(pts[q].y-sy);
+  }
+  var bhat=sxy/sxx,ahat=sy-bhat*sx,r2=(sxy*sxy)/(sxx*syy);
+  $("bOut").textContent=fmt(bhat);$("r2Out").textContent=fmt(r2);
+  var ctx=clearCanvas("regCanvas"); if(!ctx)return;
+  var left=65,right=835,top=45,bottom=300;
+  function mx(x){return left+(x+5)/10*(right-left);}
+  function my(y){return bottom-(y+8)/16*(bottom-top);}
+  ctx.strokeStyle="#ddd6c7";
+  for(var gy=0;gy<=5;gy++){var yy=top+gy*(bottom-top)/5;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke();}
+  for(var m=0;m<pts.length;m++){ctx.fillStyle="#2f6f5e";ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(mx(pts[m].x),my(pts[m].y),4,0,Math.PI*2);ctx.fill();}
+  ctx.globalAlpha=1;
+  ctx.strokeStyle="#b56a2b";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(mx(-4.5),my(ahat+bhat*(-4.5)));ctx.lineTo(mx(4.5),my(ahat+bhat*4.5));ctx.stroke();
+  ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";
+  ctx.fillText("OLS 找到一条让残差平方和最小的直线。噪声越大，估计越不稳定，R²越低。",450,350);
+}
+
+function bind(id,fn,canvasId){
+  var el=$(id);
+  if(el){el.addEventListener("input",function(){safe(fn,canvasId);});}
+}
+function init(){
+  bind("nLLN",drawLLN,"llnCanvas");
+  bind("cltN",drawCLT,"cltCanvas");bind("rep",drawCLT,"cltCanvas");
+  bind("alpha",drawErrors,"errorCanvas");bind("effect",drawErrors,"errorCanvas");bind("powerN",drawErrors,"errorCanvas");
+  bind("slope",drawReg,"regCanvas");bind("regNoise",drawReg,"regCanvas");bind("regN",drawReg,"regCanvas");
+  safe(drawLLN,"llnCanvas");
+  safe(drawCLT,"cltCanvas");
+  safe(drawErrors,"errorCanvas");
+  safe(drawReg,"regCanvas");
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}
+window.toggleAnswer=function(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block";};
+})();
+</script>
+
+</body>
+</html>

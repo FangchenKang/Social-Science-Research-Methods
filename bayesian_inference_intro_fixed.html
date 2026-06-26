@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>贝叶斯方法：背后的原理</title>
+<style>
+:root{
+  --bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;
+  --green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--red:#9f3f3f;--blue:#3f668f;
+  --soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf;--soft4:#f7e7e7;--soft5:#e7eef5
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:58px 22px 30px}
+.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:800;font-size:13px;letter-spacing:.08em}
+h1{max-width:1120px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}
+.subtitle{max-width:960px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1180px,92vw);margin:0 auto 70px}
+.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}
+.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}
+h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}
+h3{margin:16px 0 8px;font-size:20px}
+p{margin:10px 0;color:#2c2d2f}
+.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}
+.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}.soft4{background:var(--soft4)}.soft5{background:var(--soft5)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}
+.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.nodebox{min-width:130px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}
+.nodebox.purple{border-color:var(--purple);color:var(--purple)}.nodebox.orange{border-color:var(--orange);color:var(--orange)}.nodebox.red{border-color:var(--red);color:var(--red)}.nodebox.blue{border-color:var(--blue);color:var(--blue)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}
+.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch}
+.vsmark{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;background:var(--orange);border-radius:24px;min-width:76px}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}
+th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.timeline{position:relative;margin:22px 0 4px;padding-left:24px}
+.timeline:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:3px;background:var(--line);border-radius:999px}
+.titem{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:12px 0}
+.titem:before{content:"";position:absolute;left:-25px;top:20px;width:13px;height:13px;background:var(--green);border-radius:50%;box-shadow:0 0 0 4px #e8f1ec}
+.year{font-weight:900;color:var(--green)}
+.tabs,.btns{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.tab,.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}
+.tab.active,.btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.panel{display:none}.panel.active{display:block}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}
+label{display:block;font-weight:750}
+input[type=range]{width:100%}
+.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}
+.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}
+.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:390px;background:#fff;border:1px solid var(--line);border-radius:20px}
+.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}
+.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}
+.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}
+@media(max-width:900px){.grid,.grid3,.grid4,.vs,.controls,.output{grid-template-columns:1fr}.vsmark{min-height:60px}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">BAYESIAN INFERENCE</span>
+<h1>贝叶斯方法：用新证据不断更新判断</h1>
+<p class="subtitle">修复版：已重写第二个交互的 Beta 分布绘图，避免曲线空白或异常。贝叶斯的核心不是一个公式，而是一种推理方式：先承认自己有初始判断，再用数据修正它，最后得到更新后的不确定性判断。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#intuition">核心直觉</a><a href="#background">学术背景</a><a href="#formula">贝叶斯公式</a><a href="#four">四个要素</a><a href="#frequentist">频率主义对比</a><a href="#updating">更新逻辑</a><a href="#coin">共轭例子</a><a href="#interval">可信区间</a><a href="#mcmc">MCMC</a><a href="#social">社会科学应用</a><a href="#process">过程追踪</a><a href="#pitfalls">常见误区</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心直觉：概率是对不确定性的表达</h2>
+<p class="lead">贝叶斯方法把概率理解为研究者在给定信息下对某件事的可信程度。研究开始前，我们有一个初始判断；看到数据之后，我们更新这个判断。新证据越强，后验判断越受数据影响；已有知识越明确，先验判断越不容易被少量数据完全推翻。</p>
+<div class="quote">一句话记住：贝叶斯推断 = 先验判断 + 数据证据 → 后验判断。</div>
+<div class="diagram">
+<div class="nodebox">先验 Prior<br>已有判断</div><div class="arrow"></div><div class="nodebox purple">似然 Likelihood<br>数据证据</div><div class="arrow"></div><div class="nodebox orange">后验 Posterior<br>更新判断</div>
+</div>
+</section>
+
+<section id="background">
+<h2>二、学术背景：从 Bayes 定理到现代贝叶斯统计</h2>
+<p>贝叶斯思想源于 Thomas Bayes 关于条件概率的推理，后经 Laplace 等人发展为一种系统的概率推断方式。它和频率主义统计形成鲜明对比：频率主义把参数看成固定未知量，把数据看成随机；贝叶斯则把数据视为已观察证据，把参数的不确定性用概率分布表达。</p>
+<div class="timeline">
+<div class="titem"><span class="year">Bayes 定理</span> 把条件概率关系转化为“用证据更新假设概率”的形式。</div>
+<div class="titem"><span class="year">Laplace 传统</span> 将贝叶斯思想用于更广泛的统计推断和不确定性判断。</div>
+<div class="titem"><span class="year">20 世纪争论</span> 频率主义成为主流，贝叶斯方法因先验选择争议和计算困难一度受限。</div>
+<div class="titem"><span class="year">计算时代</span> MCMC、Stan、BUGS、JAGS 等工具让复杂贝叶斯模型可以估计，贝叶斯方法重新进入社会科学。</div>
+</div>
+<div class="quote">贝叶斯方法的现代价值，在于它可以把理论知识、历史信息、专家判断和新数据放入同一个更新框架。</div>
+</section>
+
+<section id="formula">
+<h2>三、贝叶斯公式：后验正比于先验乘以似然</h2>
+<p>贝叶斯公式把“看到证据后相信假设的程度”写成可计算形式。它关心的不是单纯 P(数据|假设)，而是 P(假设|数据)。</p>
+<div class="formula">P(H | D) = [ P(D | H) × P(H) ] / P(D)<br><br>
+H：假设或参数<br>
+D：观察到的数据<br>
+P(H)：先验概率<br>
+P(D | H)：似然，即假设为真时看到这些数据的可能性<br>
+P(H | D)：后验概率，即看到数据之后对假设的更新判断</div>
+<p>常用的简化表达是：</p>
+<div class="formula">后验 ∝ 先验 × 似然</div>
+<p>分母 P(D) 主要起归一化作用，让所有可能假设的后验概率加起来等于 1。理解贝叶斯时，最重要的是先验、似然和后验三者的关系。</p>
+</section>
+
+<section id="four">
+<h2>四、四个要素：先验、似然、后验、预测</h2>
+<p>贝叶斯分析不是只看后验结果，而是一套完整的信息更新结构。</p>
+<div class="grid4">
+<div class="card soft"><span class="tag">先验</span><h3>已有信息</h3><p>研究者在看到当前数据之前，对参数或假设的判断。可以来自理论、历史数据、专家知识，也可以较为弱信息。</p></div>
+<div class="card soft2"><span class="tag">似然</span><h3>数据证据</h3><p>在某个参数或假设为真时，观察到当前数据的可能性。它表达数据对不同假设的支持力度。</p></div>
+<div class="card soft3"><span class="tag">后验</span><h3>更新判断</h3><p>看到数据之后，对参数或假设的不确定性分布。贝叶斯推断的主要结果通常来自后验分布。</p></div>
+<div class="card soft4"><span class="tag">预测</span><h3>面向未来</h3><p>利用后验分布预测未来数据或未观察对象，同时保留不确定性。</p></div>
+</div>
+<table>
+<tr><th>要素</th><th>一句话理解</th><th>社会科学例子</th></tr>
+<tr><td>先验</td><td>研究前已有判断</td><td>既有研究认为数字政府可能提高满意度</td></tr>
+<tr><td>似然</td><td>当前数据提供的证据</td><td>问卷数据中平台使用者满意度更高</td></tr>
+<tr><td>后验</td><td>结合先验和数据后的判断</td><td>数字政府正向影响的可信程度提高</td></tr>
+<tr><td>后验预测</td><td>用更新后的模型预测新情况</td><td>预测另一个城市上线平台后的满意度变化</td></tr>
+</table>
+</section>
+
+<section id="frequentist">
+<h2>五、频率主义与贝叶斯：不是谁绝对正确，而是概率观不同</h2>
+<p>频率主义和贝叶斯的差异，不只是技术差异，而是对概率和参数的理解不同。频率主义通常把参数视为固定但未知，概率来自重复抽样；贝叶斯把参数的不确定性直接表示为概率分布。</p>
+<div class="vs">
+<div class="card soft5"><span class="tag">频率主义</span><h3>参数固定，数据随机</h3><p>关心如果无限重复抽样，估计量会有什么性质。p 值、置信区间、显著性检验都属于这一传统。</p></div>
+<div class="vsmark">VS</div>
+<div class="card soft2"><span class="tag">贝叶斯</span><h3>数据已知，参数有不确定性</h3><p>关心在当前数据和先验信息下，参数取不同值的可信程度。</p></div>
+</div>
+<table>
+<tr><th>问题</th><th>频率主义回答</th><th>贝叶斯回答</th></tr>
+<tr><td>参数是什么</td><td>固定但未知的真值</td><td>可用概率分布表达的不确定量</td></tr>
+<tr><td>区间如何解释</td><td>重复抽样中 95% 的区间覆盖真值</td><td>在模型和数据下，参数有 95% 概率落在该区间</td></tr>
+<tr><td>先验知识如何处理</td><td>通常不直接进入模型</td><td>通过先验分布明确进入推断</td></tr>
+<tr><td>小样本时</td><td>推断可能不稳定</td><td>可借助合理先验，但要警惕先验影响过强</td></tr>
+</table>
+</section>
+
+<section id="updating">
+<h2>六、互动演示：证据如何更新判断</h2>
+<p>调整先验概率、证据敏感度和样本证据，观察后验概率如何变化。</p>
+<div class="controls">
+<div><label>先验 P(H) <span class="value" id="priorVal">0.30</span></label><input id="prior" type="range" min="0.01" max="0.99" step="0.01" value="0.30"></div>
+<div><label>证据支持度 P(D|H) <span class="value" id="likeHVal">0.80</span></label><input id="likeH" type="range" min="0.01" max="0.99" step="0.01" value="0.80"></div>
+<div><label>误报可能 P(D|非H) <span class="value" id="likeNotVal">0.20</span></label><input id="likeNot" type="range" min="0.01" max="0.99" step="0.01" value="0.20"></div>
+</div>
+<canvas id="bayesCanvas" width="900" height="390"></canvas>
+<div class="output">
+<div class="metric"><span>先验概率</span><strong id="priorOut">0.30</strong></div>
+<div class="metric"><span>后验概率</span><strong id="posteriorOut">0.63</strong></div>
+<div class="metric"><span>更新幅度</span><strong id="changeOut">+0.33</strong></div>
+</div>
+</section>
+
+<section id="coin">
+<h2>七、共轭例子：用投硬币理解先验如何被数据更新</h2>
+<p>假设我们不知道一枚硬币正面概率是多少。贝叶斯会先给这个概率一个先验分布，然后根据观察到的正反面次数更新分布。最经典的例子是 Beta-Binomial 模型。</p>
+<div class="formula">先验：θ ~ Beta(α, β)<br>
+数据：正面 h 次，反面 t 次<br>
+后验：θ | 数据 ~ Beta(α + h, β + t)</div>
+<p>α 和 β 可以理解为先验中的“虚拟经验”。如果 α=1、β=1，表示比较平坦的先验；如果 α=20、β=20，表示强烈相信硬币接近公平。数据越多，后验越受数据支配。</p>
+<div class="controls">
+<div><label>先验强度 α+β <span class="value" id="strengthVal">10</span></label><input id="strength" type="range" min="2" max="100" step="2" value="10"></div>
+<div><label>观察正面次数 h <span class="value" id="headsVal">7</span></label><input id="heads" type="range" min="0" max="50" step="1" value="7"></div>
+<div><label>观察反面次数 t <span class="value" id="tailsVal">3</span></label><input id="tails" type="range" min="0" max="50" step="1" value="3"></div>
+</div>
+<canvas id="coinCanvas" width="900" height="390"></canvas>
+<div class="output">
+<div class="metric"><span>先验均值</span><strong id="priorMeanOut">0.50</strong></div>
+<div class="metric"><span>后验均值</span><strong id="postMeanOut">0.60</strong></div>
+<div class="metric"><span>数据比例</span><strong id="dataPropOut">0.70</strong></div>
+</div>
+</section>
+
+<section id="interval">
+<h2>八、可信区间：贝叶斯区间更接近日常语言</h2>
+<p>频率主义置信区间和贝叶斯可信区间经常被混淆。贝叶斯可信区间的解释更直观：在给定模型、先验和数据之后，参数有一定概率落在该区间内。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">置信区间</span><h3>频率主义解释</h3><p>如果无限重复抽样，用同样方法构造的 95% 区间将有 95% 覆盖真实参数。不能严格说“这一次真值有 95% 概率在区间内”。</p></div>
+<div class="card soft2"><span class="tag">可信区间</span><h3>贝叶斯解释</h3><p>在当前数据、模型和先验下，参数有 95% 的后验概率落在这个区间中。</p></div>
+</div>
+<div class="quote">贝叶斯区间直观，但它依赖先验和模型设定；频率主义区间不放先验，但解释更绕。</div>
+</section>
+
+<section id="mcmc">
+<h2>九、MCMC：复杂模型中用抽样近似后验分布</h2>
+<p>简单模型可以直接算出后验分布，但复杂社会科学模型往往无法手算。MCMC，即马尔可夫链蒙特卡洛，用大量模拟抽样近似后验分布。Stan、BUGS、JAGS 等软件常用于贝叶斯建模。</p>
+<div class="diagram">
+<div class="nodebox">设定模型</div><div class="arrow"></div><div class="nodebox purple">设定先验</div><div class="arrow"></div><div class="nodebox orange">MCMC 抽样</div><div class="arrow"></div><div class="nodebox red">后验分布</div>
+</div>
+<table>
+<tr><th>诊断内容</th><th>含义</th><th>为什么重要</th></tr>
+<tr><td>收敛性</td><td>不同链是否走向同一后验分布</td><td>不收敛说明结果不可靠</td></tr>
+<tr><td>有效样本量</td><td>后验抽样中有多少有效信息</td><td>太低说明模拟不稳定</td></tr>
+<tr><td>轨迹图</td><td>抽样链是否充分混合</td><td>判断是否卡在局部区域</td></tr>
+<tr><td>后验预测检验</td><td>模型能否生成类似真实数据的结果</td><td>检查模型是否严重错设</td></tr>
+</table>
+</section>
+
+<section id="social">
+<h2>十、社会科学中的贝叶斯应用</h2>
+<p>贝叶斯方法特别适合处理小样本、层级结构、不确定性表达、历史信息整合和机制证据更新。它不只是统计技术，也可以理解为一种“证据累积”的研究逻辑。</p>
+<table>
+<tr><th>应用场景</th><th>为什么适合贝叶斯</th><th>例子</th></tr>
+<tr><td>小样本研究</td><td>可以把既有研究或专家知识作为先验，但要透明报告</td><td>少数城市数字治理改革效果评估</td></tr>
+<tr><td>多层模型</td><td>可以自然表达不同层级参数的不确定性</td><td>居民嵌套在社区、学校嵌套在地区</td></tr>
+<tr><td>政策评估</td><td>可以把历史数据和当前数据结合</td><td>试点政策对治理绩效的影响</td></tr>
+<tr><td>调查实验</td><td>可以直接表达处理效应为正的概率</td><td>AI 介入调解是否降低程序正义感</td></tr>
+<tr><td>文本分类</td><td>可以表达分类结果的不确定性</td><td>政策文本主题、危机叙事、政府回应类型</td></tr>
+</table>
+</section>
+
+<section id="process">
+<h2>十一、贝叶斯与过程追踪：证据如何改变机制可信度</h2>
+<p>过程追踪虽然不是统计模型，但其证据推理常常具有贝叶斯意味。研究者面对多个竞争解释，看到一个证据后，会提高某些解释的可信度，降低另一些解释的可信度。</p>
+<div class="formula">机制可信度更新：<br>先验判断 × 证据诊断力 → 更新后的解释可信度</div>
+<table>
+<tr><th>证据类型</th><th>贝叶斯含义</th><th>过程追踪意义</th></tr>
+<tr><td>草帽证据</td><td>对多个解释都常见，更新幅度小</td><td>支持弱，只能作为背景材料</td></tr>
+<tr><td>烟枪证据</td><td>在某解释下很可能出现，在其他解释下不太可能出现</td><td>看到后显著提高某机制可信度</td></tr>
+<tr><td>箍圈证据</td><td>如果机制成立，应当出现最低限度证据</td><td>看不到会明显削弱该机制</td></tr>
+<tr><td>双重决定证据</td><td>既高度支持某解释，也排除替代解释</td><td>最强证据，但现实中少见</td></tr>
+</table>
+<div class="quote">因此，贝叶斯不仅是一种统计方法，也是一种关于“如何用证据更新判断”的方法论思维。</div>
+</section>
+
+<section id="pitfalls">
+<h2>十二、常见误区：贝叶斯不是主观随意，也不是万能替代品</h2>
+<div class="grid">
+<div class="card"><h3>误区一：先验就是拍脑袋</h3><p>先验可以来自理论、历史数据、专家知识，也可以使用弱信息先验。关键是透明、可解释、做敏感性分析。</p></div>
+<div class="card"><h3>误区二：贝叶斯不需要数据</h3><p>贝叶斯不是用主观信念替代数据，而是用数据更新已有判断。数据越多，后验通常越受数据支配。</p></div>
+<div class="card"><h3>误区三：后验概率等于真相</h3><p>后验依赖模型、先验和数据质量。模型错设、样本偏误、测量错误都会影响结果。</p></div>
+<div class="card"><h3>误区四：贝叶斯一定比频率主义高级</h3><p>两者是不同推理传统。研究问题、数据结构和解释目标不同，适合的方法也不同。</p></div>
+<div class="card"><h3>误区五：只报告后验均值</h3><p>贝叶斯的优势在于完整不确定性表达，应报告后验分布、可信区间、预测检验和敏感性分析。</p></div>
+<div class="card"><h3>误区六：忽视先验敏感性</h3><p>尤其在小样本研究中，不同先验可能导致不同结论，必须说明结论是否稳健。</p></div>
+</div>
+</section>
+
+<section id="quiz">
+<h2>十三、自测</h2>
+<div class="qa"><strong>问题 1：</strong>贝叶斯方法最核心的思想是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">用新证据更新已有判断。形式上是后验 ∝ 先验 × 似然。</div></div>
+<div class="qa"><strong>问题 2：</strong>先验是不是主观臆断？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">不一定。先验可以来自理论、历史数据、专家知识，也可以设定为弱信息先验。关键是透明报告并进行敏感性分析。</div></div>
+<div class="qa"><strong>问题 3：</strong>贝叶斯可信区间和频率主义置信区间有什么区别？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">可信区间可以解释为在当前模型、先验和数据下参数有一定后验概率落入该区间；置信区间则是重复抽样意义下的覆盖率。</div></div>
+<div class="qa"><strong>问题 4：</strong>MCMC 的作用是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">在复杂模型中用模拟抽样近似后验分布，使无法手算的贝叶斯模型可以估计。</div></div>
+</section>
+</main>
+
+<div class="footer">一句话记住：贝叶斯方法把研究看作证据更新过程，用先验表达已有知识，用似然吸收新数据，用后验呈现更新后的不确定性。</div>
+
+
+<script>
+(function(){
+function $(id){return document.getElementById(id)}
+function fmt(x){return (Math.round(Number(x)*100)/100).toFixed(2)}
+function clearCanvas(id){
+  var c=$(id); if(!c || !c.getContext) return null;
+  var ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+  ctx.setLineDash([]); ctx.globalAlpha=1; ctx.lineWidth=1;
+  return ctx;
+}
+window.toggleAnswer=function(btn){
+  var ans=btn.nextElementSibling;
+  ans.style.display=ans.style.display==="block"?"none":"block";
+}
+
+function drawBayes(){
+  var prior=Number($("prior").value), likeH=Number($("likeH").value), likeNot=Number($("likeNot").value);
+  $("priorVal").textContent=fmt(prior); $("likeHVal").textContent=fmt(likeH); $("likeNotVal").textContent=fmt(likeNot);
+  var denom=likeH*prior+likeNot*(1-prior);
+  var post=denom>0 ? (likeH*prior)/denom : prior;
+  $("priorOut").textContent=fmt(prior); $("posteriorOut").textContent=fmt(post); $("changeOut").textContent=(post-prior>=0?"+":"")+fmt(post-prior);
+  var ctx=clearCanvas("bayesCanvas"); if(!ctx)return;
+  var left=90,top=70,w=720,h=58,gap=54;
+  function bar(y,label,val,color){
+    ctx.fillStyle="#f2eee6"; ctx.fillRect(left,y,w,h);
+    ctx.fillStyle=color; ctx.fillRect(left,y,w*Math.max(0,Math.min(1,val)),h);
+    ctx.strokeStyle="#ddd6c7"; ctx.strokeRect(left,y,w,h);
+    ctx.fillStyle="#202124"; ctx.font="bold 16px sans-serif"; ctx.textAlign="left"; ctx.fillText(label,left,y-12);
+    ctx.fillStyle="#202124"; ctx.font="bold 20px sans-serif"; ctx.textAlign="right"; ctx.fillText(fmt(val),left+w-12,y+37);
+  }
+  bar(top,"先验：看到证据前相信 H 的程度",prior,"#7b4b9a");
+  bar(top+h+gap,"似然对比：证据对 H 的支持强度",likeH/(likeH+likeNot),"#b56a2b");
+  bar(top+2*(h+gap),"后验：看到证据后的更新判断",post,"#2f6f5e");
+  ctx.fillStyle="#5f6368"; ctx.font="15px sans-serif"; ctx.textAlign="center";
+  ctx.fillText("后验由先验和证据共同决定。强证据会推动更新，强先验会让更新更稳健。",450,350);
+}
+
+/* Robust log-gamma via Lanczos approximation */
+function logGamma(z){
+  var p=[
+    676.5203681218851,
+    -1259.1392167224028,
+    771.32342877765313,
+    -176.61502916214059,
+    12.507343278686905,
+    -0.13857109526572012,
+    9.9843695780195716e-6,
+    1.5056327351493116e-7
+  ];
+  if(z < 0.5){
+    return Math.log(Math.PI) - Math.log(Math.sin(Math.PI*z)) - logGamma(1-z);
+  }
+  z -= 1;
+  var x = 0.99999999999980993;
+  for(var i=0;i<p.length;i++){ x += p[i]/(z+i+1); }
+  var t = z + p.length - 0.5;
+  return 0.5*Math.log(2*Math.PI) + (z+0.5)*Math.log(t) - t + Math.log(x);
+}
+function logBeta(a,b){return logGamma(a)+logGamma(b)-logGamma(a+b)}
+function betaLogPdf(x,a,b){
+  if(x<=0 || x>=1) return -Infinity;
+  return (a-1)*Math.log(x) + (b-1)*Math.log(1-x) - logBeta(a,b);
+}
+
+function drawCoin(){
+  var strength=Number($("strength").value), heads=Number($("heads").value), tails=Number($("tails").value);
+  $("strengthVal").textContent=strength; $("headsVal").textContent=heads; $("tailsVal").textContent=tails;
+
+  var a0=strength/2, b0=strength/2;
+  var a1=a0+heads, b1=b0+tails;
+  var priorMean=a0/(a0+b0);
+  var postMean=a1/(a1+b1);
+  var dataProp=(heads+tails)>0 ? heads/(heads+tails) : 0.5;
+  $("priorMeanOut").textContent=fmt(priorMean);
+  $("postMeanOut").textContent=fmt(postMean);
+  $("dataPropOut").textContent=fmt(dataProp);
+
+  var ctx=clearCanvas("coinCanvas"); if(!ctx)return;
+  var left=65,right=835,top=45,bottom=300;
+  function mx(x){return left+x*(right-left)}
+
+  var vals=[], maxLog=-Infinity;
+  for(var i=1;i<400;i++){
+    var x=i/400;
+    var lp0=betaLogPdf(x,a0,b0);
+    var lp1=betaLogPdf(x,a1,b1);
+    vals.push([x,lp0,lp1]);
+    if(isFinite(lp0) && lp0>maxLog) maxLog=lp0;
+    if(isFinite(lp1) && lp1>maxLog) maxLog=lp1;
+  }
+  if(!isFinite(maxLog)){maxLog=0;}
+
+  var scaled=vals.map(function(v){
+    var y0=isFinite(v[1]) ? Math.exp(v[1]-maxLog) : 0;
+    var y1=isFinite(v[2]) ? Math.exp(v[2]-maxLog) : 0;
+    return [v[0],y0,y1];
+  });
+  var maxY=0;
+  scaled.forEach(function(v){ if(v[1]>maxY)maxY=v[1]; if(v[2]>maxY)maxY=v[2]; });
+  if(maxY<=0 || !isFinite(maxY)) maxY=1;
+  function my(y){return bottom - y/maxY*(bottom-top)*0.88}
+
+  ctx.strokeStyle="#ddd6c7";
+  for(var g=0;g<=5;g++){
+    var yy=top+g*(bottom-top)/5;
+    ctx.beginPath(); ctx.moveTo(left,yy); ctx.lineTo(right,yy); ctx.stroke();
+  }
+  ctx.fillStyle="#5f6368"; ctx.font="12px sans-serif"; ctx.textAlign="center";
+  for(var tick=0;tick<=10;tick+=2){
+    var xTick=tick/10;
+    ctx.fillText(xTick.toFixed(1),mx(xTick),bottom+22);
+  }
+
+  function drawCurve(idx,color,width){
+    ctx.strokeStyle=color; ctx.lineWidth=width; ctx.beginPath();
+    var started=false;
+    scaled.forEach(function(v){
+      var x=mx(v[0]), y=my(v[idx]);
+      if(!started){ctx.moveTo(x,y); started=true;} else {ctx.lineTo(x,y);}
+    });
+    ctx.stroke();
+  }
+  drawCurve(1,"#7b4b9a",3);
+  drawCurve(2,"#2f6f5e",4);
+
+  // mean markers
+  ctx.setLineDash([5,5]);
+  ctx.strokeStyle="#7b4b9a"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(mx(priorMean),top); ctx.lineTo(mx(priorMean),bottom); ctx.stroke();
+  ctx.strokeStyle="#2f6f5e"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(mx(postMean),top); ctx.lineTo(mx(postMean),bottom); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle="#7b4b9a"; ctx.font="bold 14px sans-serif"; ctx.textAlign="left"; ctx.fillText("紫色：先验分布",left+20,70);
+  ctx.fillStyle="#2f6f5e"; ctx.fillText("绿色：后验分布",left+20,94);
+  ctx.fillStyle="#5f6368"; ctx.font="15px sans-serif"; ctx.textAlign="center";
+  ctx.fillText("后验 = 先验 + 数据。先验越强，绿色曲线越不容易被少量正反面数据拉动。",450,350);
+}
+
+function safe(fn,id){
+  try{fn();}
+  catch(e){
+    var ctx=clearCanvas(id);
+    if(ctx){
+      ctx.fillStyle="#9f3f3f"; ctx.font="16px sans-serif"; ctx.textAlign="center";
+      ctx.fillText("图示加载失败，请刷新页面或调整滑块重试。",450,195);
+    }
+    if(window.console){console.error(e);}
+  }
+}
+function bind(id,fn,canvasId){
+  var el=$(id);
+  if(el){el.addEventListener("input",function(){safe(fn,canvasId);});}
+}
+function init(){
+  ["prior","likeH","likeNot"].forEach(function(id){bind(id,drawBayes,"bayesCanvas")});
+  ["strength","heads","tails"].forEach(function(id){bind(id,drawCoin,"coinCanvas")});
+  safe(drawBayes,"bayesCanvas");
+  safe(drawCoin,"coinCanvas");
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}
+})();
+</script>
+
+</body>
+</html>

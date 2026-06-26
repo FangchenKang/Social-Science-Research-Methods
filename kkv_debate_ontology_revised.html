@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KKV 争论：统一推断逻辑、质性回应与本体论分歧</title>
+<style>
+:root{
+  --bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;
+  --green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--red:#9f3f3f;--blue:#3f668f;
+  --soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf;--soft4:#f7e7e7;--soft5:#e7eef5
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:58px 22px 30px}
+.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:800;font-size:13px;letter-spacing:.08em}
+h1{max-width:1120px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}
+.subtitle{max-width:940px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1180px,92vw);margin:0 auto 70px}
+.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}
+.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}
+h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}
+h3{margin:16px 0 8px;font-size:20px}
+p{margin:10px 0;color:#2c2d2f}
+.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}
+.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}.soft4{background:var(--soft4)}.soft5{background:var(--soft5)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}
+.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.nodebox{min-width:130px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}
+.nodebox.purple{border-color:var(--purple);color:var(--purple)}.nodebox.orange{border-color:var(--orange);color:var(--orange)}.nodebox.red{border-color:var(--red);color:var(--red)}.nodebox.blue{border-color:var(--blue);color:var(--blue)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}
+.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch}
+.vsmark{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;background:var(--orange);border-radius:24px;min-width:76px}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}
+th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.timeline{position:relative;margin:22px 0 4px;padding-left:24px}
+.timeline:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:3px;background:var(--line);border-radius:999px}
+.titem{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:12px 0}
+.titem:before{content:"";position:absolute;left:-25px;top:20px;width:13px;height:13px;background:var(--green);border-radius:50%;box-shadow:0 0 0 4px #e8f1ec}
+.year{font-weight:900;color:var(--green)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}
+.btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.arena{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.speech{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;min-height:220px}
+.speech h3{margin-top:0}.role{display:inline-block;border-radius:999px;padding:4px 10px;background:var(--soft);color:var(--green);font-size:13px;font-weight:800}
+.ontology-card{border:1px solid var(--line);border-radius:22px;padding:22px;background:#fff}
+.ontology-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.badge{font-weight:900;color:#fff;background:var(--purple);border-radius:999px;padding:5px 10px;font-size:13px}
+.badge.green{background:var(--green)}.badge.orange{background:var(--orange)}.badge.red{background:var(--red)}.badge.blue{background:var(--blue)}
+.layer{display:grid;grid-template-columns:170px 1fr 1fr;gap:12px;align-items:stretch;margin:12px 0}
+.layer .label{background:#1f2933;color:#fff;border-radius:16px;padding:14px;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center}
+.layer .cell{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}
+@media(max-width:900px){.grid,.grid3,.grid4,.vs,.arena,.layer{grid-template-columns:1fr}.vsmark{min-height:60px}.layer .label{text-align:left}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">METHOD DEBATE</span>
+<h1>KKV 争论：统一推断逻辑、质性回应与本体论分歧</h1>
+<p class="subtitle">这场争论表面上是定量和定性的研究设计之争，深层上是关于社会世界如何存在、因果关系如何发生、案例与变量如何构成知识对象的本体论分歧。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#intuition">核心问题</a><a href="#timeline">历史脉络</a><a href="#kkv">KKV 主张</a><a href="#critique">质性回应</a><a href="#ontology">本体论差异</a><a href="#epistemology">认识论差异</a><a href="#mechanism">机制之争</a><a href="#two-cultures">两种文化</a><a href="#arena">互动争论</a><a href="#public">公共管理意义</a><a href="#synthesis">综合路径</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心问题：社会科学到底是在寻找“变量规律”，还是解释“历史过程”？</h2>
+<p class="lead">KKV 指 King、Keohane 和 Verba 合著的《Designing Social Inquiry》。他们提出，定量研究和定性研究虽然资料形式不同，但本质上都应遵循同一种科学推断逻辑。争论由此展开：质性研究是否也应当像定量研究一样追求变量间的反事实推断？还是说，质性研究面对的社会现实本来就是过程性、关系性、情境化和组合性的，不能简单压缩为变量矩阵？</p>
+<div class="quote">一句话记住：KKV 争论的深层问题，不是“定量好还是定性好”，而是社会现实究竟更像一组可分解变量，还是一个历史生成的关系过程。</div>
+<div class="vs">
+<div class="card soft"><span class="tag">KKV 路线</span><h3>统一推断逻辑</h3><p>社会科学研究都应围绕描述推断和因果推断展开，定量和定性只是观察数量和资料形态不同，底层逻辑仍然一致。</p></div>
+<div class="vsmark">VS</div>
+<div class="card soft2"><span class="tag">质性回应</span><h3>多元因果逻辑</h3><p>社会现实具有历史性、过程性和情境性，案例研究不是“小样本回归”，而是在具体场域中追踪因果机制如何生成。</p></div>
+</div>
+</section>
+
+<section id="timeline">
+<h2>二、历史脉络：从“统一推断逻辑”到“重新思考社会研究”</h2>
+<p>这场争论有清楚的发展路径。KKV 先把质性研究纳入统一推断框架，随后 Brady、Collier、George、Bennett、Goertz、Mahoney 等学者从过程追踪、概念分析、案例逻辑和两种文化等方向展开回应。</p>
+<div class="timeline">
+<div class="titem"><span class="year">1994</span> King、Keohane 和 Verba 出版《Designing Social Inquiry》，主张定量和定性研究共享同一种科学推断逻辑。</div>
+<div class="titem"><span class="year">2004</span> Brady 和 Collier 主编《Rethinking Social Inquiry》，系统回应 KKV，强调质性研究的证据逻辑和方法独特性。</div>
+<div class="titem"><span class="year">2005 前后</span> George 和 Bennett 关于案例研究与过程追踪的讨论，强化了机制证据、案例内部证据和过程链条的地位。</div>
+<div class="titem"><span class="year">2012 前后</span> Goertz 和 Mahoney 提出“两种文化”，强调定量与质性在因果观、概念观和本体论预设上存在深层差异。</div>
+<div class="titem"><span class="year">今天</span> 争论逐渐从二分对立转向整合：好的研究既要可信识别，也要机制解释；既要反事实比较，也要过程证据。</div>
+</div>
+</section>
+
+<section id="kkv">
+<h2>三、KKV 的主张：好的社会科学必须有可检验的推断</h2>
+<p>KKV 的核心贡献，是把定性研究重新放进“推断”的框架中。它反对把案例研究写成不可检验的故事，要求研究者清楚说明理论的可观察含义、案例选择逻辑、反事实比较、选择偏差和推断不确定性。</p>
+<div class="grid3">
+<div class="card soft"><span class="tag">可观察含义</span><h3>理论要落到经验</h3><p>理论不能只是抽象判断，而要推出可以观察、比较和检验的经验后果。</p></div>
+<div class="card soft2"><span class="tag">增加观察值</span><h3>小样本也要扩大证据</h3><p>质性研究可以通过更多案例、时间点、情境片段和案例内部观察来增加推断信息。</p></div>
+<div class="card soft3"><span class="tag">警惕选择偏差</span><h3>不能只选成功案例</h3><p>如果只研究符合理论预期的案例，就难以判断原因是否真的导致结果。</p></div>
+</div>
+<table>
+<tr><th>KKV 关心什么</th><th>它要求研究者做什么</th><th>背后意图</th></tr>
+<tr><td>描述推断</td><td>从有限观察中概括更一般的事实</td><td>提高描述的可靠性</td></tr>
+<tr><td>因果推断</td><td>比较原因存在与不存在时结果是否不同</td><td>逼近反事实判断</td></tr>
+<tr><td>研究设计</td><td>提前考虑样本选择、测量、控制和证据规则</td><td>减少主观叙述和事后合理化</td></tr>
+<tr><td>统一标准</td><td>定性研究也要说明推断依据</td><td>让质性研究更透明、更可检验</td></tr>
+</table>
+<div class="formula">KKV 的底层逻辑：<br>社会科学研究 = 清楚问题 + 可观察含义 + 反事实比较 + 尽量无偏的推断</div>
+</section>
+
+<section id="critique">
+<h2>四、质性方法论的回应：案例不是变量的容器，而是因果过程发生的场域</h2>
+<p>批评者并不否认推断的重要性，而是反对把所有推断都压缩到变量共变和样本扩展中。质性方法论者认为，案例研究的价值不只是样本少时的替代方案，而是能够进入案例内部，观察机制如何启动、展开、受阻和转化。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">Brady & Collier</span><h3>证据类型不止一种</h3><p>案例内部证据、过程证据和关键证据，可以提供不同于统计相关的推断力量。</p></div>
+<div class="card soft2"><span class="tag">George & Bennett</span><h3>过程追踪打开黑箱</h3><p>因果机制需要在案例内部寻找痕迹，而不是只看 X 和 Y 是否共变。</p></div>
+<div class="card soft3"><span class="tag">Goertz & Mahoney</span><h3>定量与质性是两种文化</h3><p>定量更偏变量导向，质性更偏案例导向，两者不是同一逻辑的不同规模版本。</p></div>
+<div class="card soft4"><span class="tag">概念分析传统</span><h3>概念不是测量前的空壳</h3><p>很多政治学概念具有历史含义和制度边界，需要先被阐明，而不是直接转化为指标。</p></div>
+</div>
+<div class="quote">质性回应的核心判断：社会现实不是已经排列好的变量矩阵，很多因果关系是在历史情境、行动互动和制度过程中生成的。</div>
+</section>
+
+<section id="ontology">
+<h2>五、本体论差异：两边对“社会世界是什么”有不同预设</h2>
+<p class="lead">这场争论最深的层面，是本体论差异。所谓本体论，不是抽象玄学，而是研究者对研究对象存在方式的基本判断：社会世界是由可分解变量构成，还是由关系、过程、意义和制度情境构成？因果是变量之间的稳定关系，还是机制在具体情境中的生成过程？</p>
+
+<div class="layer">
+<div class="label">社会现实</div>
+<div class="cell"><span class="badge green">KKV 倾向</span><h3>可分解的变量世界</h3><p>社会现象可以被拆解为变量、观察值和变量关系。案例是承载变量值的观察单位。</p></div>
+<div class="cell"><span class="badge orange">质性倾向</span><h3>关系化的过程世界</h3><p>社会现象由行动者、制度、意义、关系和历史过程共同构成。案例本身是一个有结构的整体。</p></div>
+</div>
+
+<div class="layer">
+<div class="label">因果关系</div>
+<div class="cell"><span class="badge green">KKV 倾向</span><h3>反事实与净效应</h3><p>因果关系体现为 X 变化导致 Y 变化，关键是排除替代解释，估计原因存在与不存在的差异。</p></div>
+<div class="cell"><span class="badge orange">质性倾向</span><h3>机制与生成过程</h3><p>因果关系不是单纯的 X→Y，而是原因在特定条件下通过一系列机制产生结果。</p></div>
+</div>
+
+<div class="layer">
+<div class="label">案例</div>
+<div class="cell"><span class="badge green">KKV 倾向</span><h3>观察值</h3><p>案例主要是提供变量取值和经验观察。增加案例可以增加推断信息，降低不确定性。</p></div>
+<div class="cell"><span class="badge orange">质性倾向</span><h3>复杂整体</h3><p>案例是制度、历史、行动者和意义关系的组合。一个关键案例内部也可能包含丰富的因果证据。</p></div>
+</div>
+
+<div class="layer">
+<div class="label">情境</div>
+<div class="cell"><span class="badge green">KKV 倾向</span><h3>需要控制的背景</h3><p>情境常被理解为可能干扰 X 与 Y 关系的因素，需要通过控制、匹配或比较加以处理。</p></div>
+<div class="cell"><span class="badge orange">质性倾向</span><h3>因果生成的条件</h3><p>情境不是噪声，而是机制能否发生的构成性条件。同一原因在不同情境中可能产生不同结果。</p></div>
+</div>
+
+<div class="layer">
+<div class="label">概念</div>
+<div class="cell"><span class="badge green">KKV 倾向</span><h3>变量化和测量</h3><p>概念应尽可能转化为可观察、可测量、可比较的变量。</p></div>
+<div class="cell"><span class="badge orange">质性倾向</span><h3>意义和边界</h3><p>概念具有历史语义、制度边界和类别属性。概念澄清本身就是理论工作。</p></div>
+</div>
+
+<div class="quote">因此，KKV 争论不是“谁更科学”的简单争论，而是两种社会本体论之间的张力：一种把社会世界看作变量关系的可推断结构，另一种把社会世界看作历史情境中的生成过程。</div>
+</section>
+
+<section id="epistemology">
+<h2>六、认识论差异：知识是从变量比较中来，还是从过程理解中来</h2>
+<p>本体论差异会进一步带来认识论差异。认识论关注“我们如何知道”。如果社会世界被理解为变量关系，知识就主要来自比较、控制和反事实推断；如果社会世界被理解为过程生成，知识就还需要来自解释、追踪、概念澄清和情境理解。</p>
+<table>
+<tr><th>维度</th><th>KKV 式认识论</th><th>质性机制式认识论</th></tr>
+<tr><td>有效知识</td><td>可检验、可复制、可反驳的推断</td><td>能解释过程、机制和情境的深描证据</td></tr>
+<tr><td>证据标准</td><td>控制偏差、扩大观察、提高可比性</td><td>过程证据、机制痕迹、关键节点和反例处理</td></tr>
+<tr><td>理论形态</td><td>变量间一般性关系</td><td>条件化、机制化、情境化命题</td></tr>
+<tr><td>推理方式</td><td>从样本到总体、从观察到因果效应</td><td>从案例内部过程到机制解释，再到有限推广</td></tr>
+<tr><td>主要风险</td><td>机制黑箱、概念变薄、情境被控制掉</td><td>证据选择性、外推有限、解释不可检验</td></tr>
+</table>
+<div class="quote">更深的分歧在这里：KKV 担心质性研究不够可检验，质性方法论者担心 KKV 把社会过程压扁成变量关系。</div>
+</section>
+
+<section id="mechanism">
+<h2>七、机制之争：因果推断不能只有“是否有效”</h2>
+<p>KKV 强调如何更可信地判断 X 是否导致 Y，质性方法论者则强调，社会科学还必须说明 X 如何导致 Y。机制不是对回归结果的事后补充，而是因果关系本身的组成部分。</p>
+<div class="diagram">
+<div class="nodebox">原因 X</div><div class="arrow"></div><div class="nodebox purple">条件 C</div><div class="arrow"></div><div class="nodebox orange">机制 M</div><div class="arrow"></div><div class="nodebox red">结果 Y</div>
+</div>
+<div class="grid3">
+<div class="card soft"><span class="tag">净效应</span><p>在控制其他因素后，X 是否平均影响 Y。</p></div>
+<div class="card soft2"><span class="tag">组合条件</span><p>X 是否必须与某些条件共同出现才产生结果。</p></div>
+<div class="card soft3"><span class="tag">过程机制</span><p>X 如何通过行动、认知、组织和制度过程生成 Y。</p></div>
+</div>
+<p>例如，环境督察是否改善地方环境治理，不能只看督察前后污染指标是否下降，还要看督察是否带来问责压力、资源再配置、部门协同和企业整改。机制证据越完整，因果解释越不容易变成黑箱。</p>
+</section>
+
+<section id="two-cultures">
+<h2>八、“两种文化”：变量导向与案例导向</h2>
+<p>Goertz 和 Mahoney 的“两种文化”把 KKV 争论进一步推向认识论和本体论层面。定量研究和质性研究不只是样本大小不同，而是在因果观、概念观和研究对象构造上存在差异。</p>
+<div class="vs">
+<div class="card soft5"><span class="tag">变量导向</span><h3>定量研究文化</h3><p>关注变量之间的平均关系，强调概率、相关、回归、净效应、控制变量和可推广性。典型问题是：X 平均而言是否提高 Y？</p></div>
+<div class="vsmark">↔</div>
+<div class="card soft2"><span class="tag">案例导向</span><h3>质性研究文化</h3><p>关注具体案例中的条件组合、因果过程和历史情境，强调必要条件、充分条件、机制链条和概念边界。典型问题是：为什么这个结果在这个情境中发生？</p></div>
+</div>
+<table>
+<tr><th>维度</th><th>变量导向</th><th>案例导向</th></tr>
+<tr><td>因果理解</td><td>概率性、平均效应、净效应</td><td>组合性、过程性、必要/充分条件</td></tr>
+<tr><td>解释单位</td><td>变量</td><td>案例与过程</td></tr>
+<tr><td>典型方法</td><td>回归、实验、DID、RDD</td><td>比较历史分析、过程追踪、QCA、深描案例</td></tr>
+<tr><td>优势</td><td>估计效应大小、处理不确定性、增强推广性</td><td>打开黑箱、澄清概念、解释复杂过程</td></tr>
+<tr><td>弱点</td><td>可能机制不足、情境变薄</td><td>可能推断范围有限、证据选择不透明</td></tr>
+</table>
+</section>
+
+<section id="arena">
+<h2>九、互动争论：同一个研究，两种本体论会问出不同问题</h2>
+<p>选择一个议题，看看 KKV 式推断逻辑和质性机制逻辑如何评价同一项研究。</p>
+<div class="btns">
+<button class="btn active" data-case="case1">环境督察</button>
+<button class="btn" data-case="case2">综治中心</button>
+<button class="btn" data-case="case3">党群服务中心</button>
+<button class="btn" data-case="case4">数字政府</button>
+</div>
+<div class="arena">
+<div class="speech" id="kkvSpeech"></div>
+<div class="speech" id="qualSpeech"></div>
+</div>
+</section>
+
+<section id="public">
+<h2>十、放到政治学和公共管理中：为什么这场争论特别重要</h2>
+<p>政治学和公共管理研究面对的不是自然实验室中的变量，而是制度、组织、政策、权力和行动者构成的复杂场域。因此，这场争论会直接影响研究如何提出问题、选择案例、设计模型和解释机制。</p>
+<div class="grid3">
+<div class="card soft"><span class="tag">政策评估</span><h3>需要 KKV 的识别意识</h3><p>数字政府、环境督察、试点政策和基层平台建设是否产生效果，需要处理反事实和选择偏差。</p></div>
+<div class="card soft2"><span class="tag">制度研究</span><h3>需要质性的过程意识</h3><p>制度不是单一变量，而是组织规则、权责关系、行动策略和意义秩序的组合。</p></div>
+<div class="card soft3"><span class="tag">治理研究</span><h3>需要机制和情境意识</h3><p>同样的政策工具，在不同地方能力、社会基础和组织关系下，可能产生不同治理结果。</p></div>
+</div>
+<table>
+<tr><th>研究类型</th><th>KKV 会提醒</th><th>质性方法会提醒</th></tr>
+<tr><td>案例研究</td><td>不要只选成功案例，要说明反事实和选择逻辑</td><td>不要把案例拆成变量，要保留过程和情境</td></tr>
+<tr><td>回归研究</td><td>要处理遗漏变量、反向因果和测量误差</td><td>不要只有系数，要解释机制与制度背景</td></tr>
+<tr><td>混合方法研究</td><td>定量和定性要服务同一因果问题</td><td>质性材料不只是定量结果的举例说明</td></tr>
+</table>
+</section>
+
+<section id="synthesis">
+<h2>十一、如何综合：从方法站队走向本体论自觉</h2>
+<p>更成熟的路径，不是简单站队 KKV 或反 KKV，而是形成方法论自觉：研究者要知道自己面对的社会现实是什么类型，自己的因果问题适合用什么证据回答，自己的解释是否既有识别基础，又有机制深度。</p>
+<div class="grid4">
+<div class="card soft"><span class="tag">第一</span><h3>问题要因果化</h3><p>清楚说明 X、Y、反事实和比较对象。</p></div>
+<div class="card soft2"><span class="tag">第二</span><h3>对象要本体化</h3><p>说明研究对象是变量关系、历史过程、组织场域还是意义结构。</p></div>
+<div class="card soft3"><span class="tag">第三</span><h3>机制要可追踪</h3><p>不只说有效，还要展示过程链条。</p></div>
+<div class="card soft4"><span class="tag">第四</span><h3>边界要清楚</h3><p>说明结论在哪些情境中成立，在哪些情境中可能失效。</p></div>
+</div>
+<div class="quote">KKV 争论的真正遗产，是让社会科学同时重视可信识别、机制解释和本体论自觉。前者防止故事化，后者防止黑箱化，本体论自觉则防止方法先行遮蔽研究对象。</div>
+</section>
+
+<section id="quiz">
+<h2>十二、自测</h2>
+<div class="qa"><strong>问题 1：</strong>KKV 的核心主张是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">定量研究和定性研究虽然资料形式不同，但都应遵循同一种科学推断逻辑，都要面对反事实、选择偏差、可观察含义和推断不确定性。</div></div>
+<div class="qa"><strong>问题 2：</strong>质性方法论者为什么批评 KKV？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">因为他们认为 KKV 过度用定量研究标准规范质性研究，忽视了过程追踪、机制识别、概念分析和案例内部证据的独特价值。</div></div>
+<div class="qa"><strong>问题 3：</strong>两者背后的本体论差异是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">KKV 更倾向于把社会世界理解为可分解的变量关系，质性方法论更倾向于把社会世界理解为历史情境中的关系过程和机制生成。</div></div>
+</section>
+</main>
+<div class="footer">一句话记住：KKV 争论不是定量与定性谁赢，而是让社会科学同时追问“凭什么说是因果”“因果如何发生”“研究对象究竟以什么方式存在”。</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+function toggleAnswer(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block"}
+const cases={
+case1:{
+kkv:"<span class='role'>KKV 式问题</span><h3>环境督察是否真的造成改善？</h3><p>不能只看督察后污染下降，因为可能本来就在下降。需要构造对照组、检验政策前趋势、处理选择偏差，并说明督察前后变化是否真的来自督察。</p>",
+qual:"<span class='role'>质性机制问题</span><h3>督察如何进入地方治理过程？</h3><p>污染下降不等于机制清楚。要看督察如何带来问责压力、部门协同、企业整改和地方政府策略调整。</p>"
+},
+case2:{
+kkv:"<span class='role'>KKV 式问题</span><h3>综治中心是否提升治理绩效？</h3><p>需要比较有中心和没有中心的地区，或者比较升级前后变化。还要警惕：是不是本来治理能力强的地方更容易建设好中心？</p>",
+qual:"<span class='role'>质性机制问题</span><h3>中心如何重组治理关系？</h3><p>综治中心不是一个简单处理变量，而是一个制度化场域。它如何整合公安、信访、司法、街道和社区，如何转化责任和情绪，才是机制问题。</p>"
+},
+case3:{
+kkv:"<span class='role'>KKV 式问题</span><h3>党群中心是否导致参与增加？</h3><p>经常去党群中心的人可能本来参与意愿就高，因此要处理自选择、空间选择和遗漏变量问题。</p>",
+qual:"<span class='role'>质性机制问题</span><h3>空间如何生成政治参与？</h3><p>党群中心是组织可见性、公共空间和政治象征的结合。要解释服务接触、共在经验和组织嵌入如何塑造参与。</p>"
+},
+case4:{
+kkv:"<span class='role'>KKV 式问题</span><h3>数字政府是否产生净效应？</h3><p>平台上线地区可能经济更发达、财政更强、行政能力更高。需要 DID、匹配、固定效应或其他识别策略控制这些差异。</p>",
+qual:"<span class='role'>质性机制问题</span><h3>技术如何改变组织过程？</h3><p>数字政府不是平台上线本身，而是流程再造、数据共享、部门协同和群众感知变化。满意度变化要回到组织过程和使用体验中解释。</p>"
+}
+}
+function showCase(k){
+document.querySelectorAll(".btn").forEach(b=>b.classList.toggle("active",b.dataset.case===k))
+$("kkvSpeech").innerHTML=cases[k].kkv
+$("qualSpeech").innerHTML=cases[k].qual
+}
+document.querySelectorAll(".btn").forEach(b=>b.addEventListener("click",()=>showCase(b.dataset.case)))
+showCase("case1")
+</script>
+</body>
+</html>

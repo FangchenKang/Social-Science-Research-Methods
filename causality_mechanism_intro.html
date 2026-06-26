@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>因果关系与因果机制：背后的原理</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;--green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--red:#a33b3b;--soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf;--soft4:#f7e7e7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:56px 22px 30px}.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:700;font-size:13px;letter-spacing:.08em}
+h1{max-width:1060px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}.subtitle{max-width:900px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1160px,92vw);margin:0 auto 70px}.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}h3{margin:16px 0 8px;font-size:20px}p{margin:10px 0;color:#2c2d2f}.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}.soft4{background:var(--soft4)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}.nodebox{min-width:120px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}.nodebox.purple{border-color:var(--purple);color:var(--purple)}.nodebox.orange{border-color:var(--orange);color:var(--orange)}.nodebox.red{border-color:var(--red);color:var(--red)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.tabs,.btns{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.tab,.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}.tab.active,.btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.panel{display:none}.panel.active{display:block}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}label{display:block;font-weight:750}input[type=range]{width:100%}.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}
+.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:390px;background:#fff;border:1px solid var(--line);border-radius:20px}.mini{font-size:14px;color:var(--muted)}.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}@media(max-width:900px){.grid,.grid3,.grid4,.controls,.output{grid-template-columns:1fr}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">METHOD NOTE</span>
+<h1>因果关系与因果机制：从“是否造成”到“如何造成”</h1>
+<p class="subtitle">因果推断回答 X 是否导致 Y，因果机制回答 X 通过什么过程导致 Y。前者强调识别和反事实，后者强调过程和解释，两者共同构成社会科学中的因果分析。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#intuition">核心直觉</a><a href="#background">学术背景</a><a href="#definition">定义与判别</a><a href="#forms">基本形式</a><a href="#paths">技术路径</a><a href="#mechanism">因果机制</a><a href="#demo">互动演示</a><a href="#examples">政治学与公共管理实例</a><a href="#controversy">争议与趋势</a><a href="#workflow">研究流程</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心直觉：因果关系问“是不是”，因果机制问“为什么”</h2>
+<p class="lead">因果关系关注一个因素是否改变了另一个结果。因果机制关注这种改变是通过什么环节、过程和中介路径发生的。只说“X 和 Y 有关系”还不是因果分析；只有说明在某种反事实情境下，如果 X 不发生，Y 会不会不同，才进入因果推断。</p>
+<div class="quote">一句话记住：相关关系看一起变化，因果关系看反事实差异，因果机制看中间过程。</div>
+<div class="diagram">
+<div class="nodebox">原因 X<br>政策/制度/事件</div><div class="arrow"></div><div class="nodebox purple">机制 M<br>资源/激励/认知/组织过程</div><div class="arrow"></div><div class="nodebox orange">结果 Y<br>行为/绩效/态度/治理效果</div>
+</div>
+</section>
+
+<section id="background">
+<h2>二、学术背景：因果分析从哲学问题走向经验识别</h2>
+<p>因果关系最早是哲学和逻辑问题。Hume 强调我们看到的往往是恒常联结，而不是直接看到“因果力”；Mill 提出求同法、求异法等判别因果的逻辑。进入现代社会科学后，因果分析逐渐转向经验识别，即如何在现实资料中逼近“如果没有这个原因，会发生什么”的反事实。</p>
+<table>
+<tr><th>发展线索</th><th>核心贡献</th><th>对社会科学的意义</th></tr>
+<tr><td>哲学与逻辑传统</td><td>讨论原因、结果、必要条件、充分条件、反事实和规律性</td><td>提供因果判断的基本概念。</td></tr>
+<tr><td>实验科学传统</td><td>通过随机分配控制其他因素，比较处理组和对照组</td><td>形成因果识别的理想模型。</td></tr>
+<tr><td>潜在结果框架</td><td>把因果效应定义为同一对象在处理和未处理两种状态下结果的差异</td><td>使反事实成为可形式化表达的因果语言。</td></tr>
+<tr><td>结构因果模型与 DAG</td><td>用有向图表示变量之间的因果路径、混杂和中介</td><td>帮助研究者明确该控制什么、不该控制什么。</td></tr>
+<tr><td>机制与过程研究</td><td>强调因果作用不是黑箱，而有可追踪的过程链条</td><td>推动定量识别和质性过程解释结合。</td></tr>
+</table>
+</section>
+
+<section id="definition">
+<h2>三、因果关系的定义和判别标准</h2>
+<p>因果关系可以理解为：在其他条件相同的情况下，X 的变化会导致 Y 的变化。它不仅要求 X 和 Y 一起变化，更要求 X 在时间上先于 Y，并且这种关系不能被第三个因素完全解释。</p>
+<div class="grid4">
+<div class="card soft"><span class="tag">共同变化</span><h3>X 与 Y 有关联</h3><p>如果 X 变化时 Y 完全不变，通常难以说 X 导致 Y。</p></div>
+<div class="card soft2"><span class="tag">时间顺序</span><h3>X 先于 Y</h3><p>原因必须先于结果，否则可能是反向因果。</p></div>
+<div class="card soft3"><span class="tag">排除混杂</span><h3>不是 Z 同时影响 X 和 Y</h3><p>需要处理遗漏变量、选择偏差和共同趋势。</p></div>
+<div class="card soft4"><span class="tag">机制合理</span><h3>能说明如何发生</h3><p>因果关系越有机制支撑，解释越有说服力。</p></div>
+</div>
+<div class="formula">因果效应 = Y(接受处理) - Y(未接受处理)<br>问题在于：同一个对象不可能同时处在两种状态，所以必须构造反事实。</div>
+<p>这就是因果推断的根本难题：我们观察到一个地区实施政策后的结果，却看不到同一个地区如果没有实施政策会怎样。因果推断的所有方法，本质上都在寻找或构造这个不可观察的反事实。</p>
+</section>
+
+<section id="forms">
+<h2>四、因果推断的基本形式</h2>
+<p>因果推断有几种常见表达方式。不同形式使用不同语言，但核心都围绕“原因、结果、反事实和识别”展开。</p>
+<div class="grid3">
+<div class="card soft"><span class="tag">反事实形式</span><h3>如果没有 X，Y 会怎样</h3><p>这是现代因果推断的核心表达。政策评估、DID、RDD、IV、实验设计都在构造反事实。</p></div>
+<div class="card soft2"><span class="tag">图模型形式</span><h3>X、Y、Z 之间怎样连接</h3><p>DAG 用箭头表示因果路径，帮助识别混杂、碰撞点、中介变量和控制策略。</p></div>
+<div class="card soft3"><span class="tag">机制形式</span><h3>X 通过什么过程影响 Y</h3><p>机制分析关注中间环节，常用中介效应、过程追踪、访谈和案例证据展开。</p></div>
+</div>
+<table>
+<tr><th>形式</th><th>核心问题</th><th>典型方法</th></tr>
+<tr><td>平均处理效应</td><td>接受处理和未接受处理的平均差异是多少？</td><td>实验、DID、RDD、IV、匹配</td></tr>
+<tr><td>异质性效应</td><td>政策对哪些群体更有效？</td><td>交互项、分组回归、因果森林</td></tr>
+<tr><td>机制效应</td><td>政策通过什么渠道发挥作用？</td><td>中介分析、过程追踪、结构方程、机制检验</td></tr>
+<tr><td>动态效应</td><td>政策效应如何随时间变化？</td><td>事件研究、动态 DID、面板模型</td></tr>
+</table>
+</section>
+
+<section id="paths">
+<h2>五、因果推断的技术路径</h2>
+<p>不同技术路径解决的是同一个问题：如何让处理组和对照组在没有处理时尽可能可比。方法不同，反事实构造方式也不同。</p>
+<table>
+<tr><th>技术路径</th><th>背后原理</th><th>适用场景</th></tr>
+<tr><td>随机实验</td><td>通过随机分配让处理组和对照组在平均意义上可比</td><td>调查实验、现场实验、政策试点随机化</td></tr>
+<tr><td>DID</td><td>用对照组变化替代处理组没有政策时的变化</td><td>政策前后数据、处理组和对照组可比</td></tr>
+<tr><td>事件研究</td><td>把政策效应拆成相对时间路径，检验政策前趋势和政策后动态</td><td>需要展示平行趋势和效应演化</td></tr>
+<tr><td>RDD</td><td>利用阈值附近个体近似随机进入处理组</td><td>分数线、人口门槛、政策资格线</td></tr>
+<tr><td>IV</td><td>用外生工具变量提取 X 中不受内生性污染的部分</td><td>存在反向因果、遗漏变量、测量误差</td></tr>
+<tr><td>PSM</td><td>用可观察变量匹配可比对象</td><td>处理可观察选择偏差</td></tr>
+<tr><td>SCM</td><td>用多个未处理单位加权合成反事实对象</td><td>单个地区或少数地区政策评估</td></tr>
+<tr><td>固定效应</td><td>控制不随时间变化的个体差异和共同时间冲击</td><td>面板数据、地区或组织长期观察</td></tr>
+</table>
+<div class="quote">技术路径不是越复杂越好，关键是研究问题、数据结构和识别假设是否匹配。</div>
+</section>
+
+<section id="mechanism">
+<h2>六、因果机制的概念与作用</h2>
+<p>因果机制是连接原因和结果的中间过程。它回答的不是“X 是否影响 Y”，而是“X 为什么、通过什么环节、在什么条件下影响 Y”。在政治学和公共管理中，机制常常表现为资源配置、激励约束、信息传递、组织动员、认知改变、责任压力和合法性建构。</p>
+<div class="formula">X → M → Y<br>政策 X 改变机制变量 M，机制变量 M 进一步改变结果 Y。</div>
+<div class="grid3">
+<div class="card soft"><span class="tag">打开黑箱</span><h3>从结果走向过程</h3><p>机制让研究不只停留在政策有效或无效，而能解释为什么有效。</p></div>
+<div class="card soft2"><span class="tag">增强理论贡献</span><h3>让经验发现上升为理论命题</h3><p>同样的政策效应，如果能说明机制，就更容易形成可迁移的理论解释。</p></div>
+<div class="card soft3"><span class="tag">判断适用边界</span><h3>说明何时有效</h3><p>机制帮助判断政策在什么组织条件、社会条件和制度条件下可能复制。</p></div>
+</div>
+<table>
+<tr><th>机制类型</th><th>含义</th><th>例子</th></tr>
+<tr><td>资源机制</td><td>政策通过增加资金、人力、信息或服务能力影响结果</td><td>党群服务中心通过提供活动空间和服务资源提高参与机会</td></tr>
+<tr><td>激励机制</td><td>政策改变行动者收益、成本和责任压力</td><td>考核制度推动地方政府提高环境治理投入</td></tr>
+<tr><td>认知机制</td><td>政策改变公众理解、信任、风险感知或身份认同</td><td>透明公开提高公众对政府程序正当性的认知</td></tr>
+<tr><td>组织机制</td><td>政策重组部门关系、协作流程和权责配置</td><td>综治中心把分散部门纳入联合处置网络</td></tr>
+</table>
+</section>
+
+<section id="demo">
+<h2>七、互动演示：混杂会制造假因果，机制会打开黑箱</h2>
+<div class="tabs"><button class="tab active" data-tab="confoundPanel">混杂演示</button><button class="tab" data-tab="mechanismPanel">机制演示</button></div>
+
+<div class="panel active" id="confoundPanel">
+<p>调整真实因果效应和混杂强度。混杂越强，观察到的相关关系越可能偏离真实因果关系。</p>
+<div class="controls">
+<div><label>X 对 Y 的真实效应 <span class="value" id="effectVal">0.50</span></label><input id="effect" type="range" min="-1" max="1.5" step="0.1" value="0.5"></div>
+<div><label>混杂因素 Z 的强度 <span class="value" id="confVal">0.60</span></label><input id="conf" type="range" min="0" max="1.5" step="0.1" value="0.6"></div>
+<div><label>随机噪声 <span class="value" id="noiseVal">0.40</span></label><input id="noise" type="range" min="0.1" max="1" step="0.1" value="0.4"></div>
+</div>
+<canvas id="confCanvas" width="900" height="390"></canvas>
+<div class="output"><div class="metric"><span>真实效应</span><strong id="trueOut">0.50</strong></div><div class="metric"><span>观察相关</span><strong id="obsOut">0.00</strong></div><div class="metric"><span>风险判断</span><strong id="riskOut">偏误</strong></div></div>
+</div>
+
+<div class="panel" id="mechanismPanel">
+<p>调整 X→M 和 M→Y 两条路径。间接效应等于两条路径相乘，表示 X 通过机制 M 影响 Y 的强度。</p>
+<div class="controls">
+<div><label>X → M <span class="value" id="aVal">0.70</span></label><input id="aPath" type="range" min="-1" max="1.5" step="0.1" value="0.7"></div>
+<div><label>M → Y <span class="value" id="bVal">0.60</span></label><input id="bPath" type="range" min="-1" max="1.5" step="0.1" value="0.6"></div>
+<div><label>X → Y 直接效应 <span class="value" id="directVal">0.30</span></label><input id="direct" type="range" min="-1" max="1.5" step="0.1" value="0.3"></div>
+</div>
+<canvas id="mechCanvas" width="900" height="390"></canvas>
+<div class="output"><div class="metric"><span>间接效应</span><strong id="indirectOut">0.42</strong></div><div class="metric"><span>直接效应</span><strong id="directOut">0.30</strong></div><div class="metric"><span>总效应</span><strong id="totalOut">0.72</strong></div></div>
+</div>
+</section>
+
+<section id="examples">
+<h2>八、政治学和公共管理中的因果推断实例</h2>
+<p>政治学和公共管理中的因果问题通常涉及制度、政策、组织和公众行为。关键是把“研究问题”转化为“可识别的因果问题”。</p>
+<table>
+<tr><th>研究问题</th><th>因果关系</th><th>可能机制</th><th>可用路径</th></tr>
+<tr><td>数字政府建设是否提升公共服务满意度？</td><td>数字政府建设 → 满意度</td><td>流程简化、回应速度提高、信息透明增强</td><td>DID、SCM、面板固定效应、调查实验</td></tr>
+<tr><td>党群服务中心是否促进基层政治参与？</td><td>空间可见性/服务接触 → 政治参与</td><td>组织性共在、服务性吸纳、象征性嵌入</td><td>问卷回归、空间分析、匹配、机制检验</td></tr>
+<tr><td>环境督察是否改善地方环境治理？</td><td>督察压力 → 治理绩效</td><td>问责压力、资源再配置、部门协同</td><td>DID、事件研究、RDD、文本分析</td></tr>
+<tr><td>AI 政务助手是否影响公众信任？</td><td>AI 介入 → 信任/满意度</td><td>拟人化、程序公平、技术可靠性、权威感</td><td>调查实验、联合实验、中介分析</td></tr>
+<tr><td>综治中心是否提高矛盾纠纷化解能力？</td><td>中心化整合 → 化解效率/群众认可</td><td>国家在场、部门联动、责任转介、情绪安置</td><td>案例比较、过程追踪、网络分析、准实验</td></tr>
+</table>
+</section>
+
+<section id="controversy">
+<h2>九、争议与未来趋势</h2>
+<p>因果推断的发展带来了更强的识别意识，也引发了新的争议。社会科学不能只追求方法识别，也不能停留在宽泛解释。真正有价值的研究，需要在识别、理论、机制和情境之间取得平衡。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">争议一</span><h3>识别优先还是理论优先</h3><p>过度追求干净识别，可能导致问题碎片化；只讲宏大理论，又容易缺少可信证据。</p></div>
+<div class="card soft2"><span class="tag">争议二</span><h3>平均效应还是异质性效应</h3><p>一个政策平均有效，不代表对所有地区、组织和人群都有效。异质性越来越重要。</p></div>
+<div class="card soft3"><span class="tag">争议三</span><h3>黑箱识别还是机制解释</h3><p>因果效应显著不等于理论解释充分。机制证据能提升研究的解释深度。</p></div>
+<div class="card soft4"><span class="tag">争议四</span><h3>算法预测能否替代因果推断</h3><p>机器学习擅长预测，但预测准确不等于知道因果。未来趋势是机器学习与因果识别结合。</p></div>
+</div>
+<table>
+<tr><th>未来趋势</th><th>基本方向</th></tr>
+<tr><td>设计型因果推断</td><td>更重视研究设计、政策时点、制度规则和准自然实验机会。</td></tr>
+<tr><td>机制敏感的因果研究</td><td>把中介分析、过程追踪、访谈证据和文本证据纳入因果解释。</td></tr>
+<tr><td>因果推断与机器学习结合</td><td>用于处理异质性效应、高维控制、因果森林、双重机器学习等问题。</td></tr>
+<tr><td>文本、网络与空间数据进入因果分析</td><td>把政策文本、社交媒体、组织网络、空间关系转化为因果研究中的变量或机制证据。</td></tr>
+<tr><td>外部有效性与情境化解释</td><td>更关注一个因果发现能否跨地区、跨制度、跨群体迁移。</td></tr>
+</table>
+</section>
+
+<section id="workflow">
+<h2>十、一个因果研究通常怎么推进</h2>
+<div class="grid3">
+<div class="card soft"><span class="tag">第一步</span><h3>明确因果问题</h3><p>把一般问题转化为 X 是否影响 Y，以及在什么对象、时间和场景中发生影响。</p></div>
+<div class="card soft2"><span class="tag">第二步</span><h3>构造反事实</h3><p>说明如果没有 X，Y 会怎样，并选择合适方法构造可比对象或可比趋势。</p></div>
+<div class="card soft3"><span class="tag">第三步</span><h3>识别机制与边界</h3><p>进一步解释 X 通过什么机制影响 Y，哪些条件会强化或削弱这种影响。</p></div>
+</div>
+<div class="quote">好的因果研究不是“模型显著”，而是清楚回答：为什么这个比较可信，为什么这个机制成立，为什么这个结论有理论意义。</div>
+</section>
+
+<section id="quiz">
+<h2>十一、自测</h2>
+<div class="qa"><strong>问题 1：</strong>为什么相关关系不等于因果关系？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">因为 X 和 Y 一起变化，可能是 X 导致 Y，也可能是 Y 导致 X，还可能是第三个因素 Z 同时影响 X 和 Y。</div></div>
+<div class="qa"><strong>问题 2：</strong>因果推断最核心的难题是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">同一个对象不可能同时处在处理和未处理两种状态，因此必须构造不可观察的反事实。</div></div>
+<div class="qa"><strong>问题 3：</strong>因果机制为什么重要？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">机制能打开 X 到 Y 之间的黑箱，说明为什么有效、如何有效，以及在什么条件下可能有效。</div></div>
+</section>
+</main>
+<div class="footer">一句话记住：因果推断解决“是否造成”，因果机制解释“如何造成”，好的研究要把识别和机制结合起来。</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+document.querySelectorAll(".tab").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(b){b.classList.remove("active")});document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active")});btn.classList.add("active");$(btn.dataset.tab).classList.add("active");drawConf();drawMech()})})
+function toggleAnswer(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block"}
+function fmt(x){return (Math.round(x*100)/100).toFixed(2)}
+function seededNoise(i){var x=Math.sin(i*999)*10000;return x-Math.floor(x)}
+function drawConf(){
+ var effect=+$("effect").value,conf=+$("conf").value,noise=+$("noise").value;
+ $("effectVal").textContent=fmt(effect);$("confVal").textContent=fmt(conf);$("noiseVal").textContent=fmt(noise);$("trueOut").textContent=fmt(effect);
+ var pts=[],n=80;for(var i=0;i<n;i++){var z=(seededNoise(i)-0.5)*4;var x=0.8*z+(seededNoise(i+33)-0.5)*3;var y=effect*x+conf*z+(seededNoise(i+77)-0.5)*noise*5;pts.push({x:x,y:y})}
+ var sx=0,sy=0,sxx=0,sxy=0;pts.forEach(function(p){sx+=p.x;sy+=p.y});sx/=n;sy/=n;pts.forEach(function(p){sxx+=(p.x-sx)*(p.x-sx);sxy+=(p.x-sx)*(p.y-sy)});var slope=sxy/sxx;$("obsOut").textContent=fmt(slope);$("riskOut").textContent=Math.abs(slope-effect)>0.35?"偏误":"较稳";
+ var c=$("confCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,390);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,390);
+ var left=80,right=820,top=40,bottom=300;function mx(v){return left+(v+4)/8*(right-left)}function my(v){return bottom-(v+6)/12*(bottom-top)}
+ ctx.strokeStyle="#ddd6c7";for(var k=0;k<=6;k++){var yy=top+k*(bottom-top)/6;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke()}
+ pts.forEach(function(p){ctx.fillStyle="#2f6f5e";ctx.globalAlpha=.72;ctx.beginPath();ctx.arc(mx(p.x),my(p.y),4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1})
+ function line(m,color,label,offset){ctx.strokeStyle=color;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(mx(-3.5),my(m*(-3.5)));ctx.lineTo(mx(3.5),my(m*(3.5)));ctx.stroke();ctx.fillStyle=color;ctx.font="bold 14px sans-serif";ctx.textAlign="left";ctx.fillText(label,mx(2.2),my(m*2.2)+offset)}
+ line(effect,"#7b4b9a","真实因果效应",16);line(slope,"#b56a2b","观察到的相关斜率",-10);
+ ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("混杂因素 Z 同时影响 X 和 Y，会让观察相关偏离真实因果效应。",450,350);
+}
+function drawArrow(ctx,x1,y1,x2,y2,color,w,label){ctx.strokeStyle=color;ctx.lineWidth=2+Math.abs(w)*3;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();var ang=Math.atan2(y2-y1,x2-x1);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-12*Math.cos(ang-.45),y2-12*Math.sin(ang-.45));ctx.lineTo(x2-12*Math.cos(ang+.45),y2-12*Math.sin(ang+.45));ctx.closePath();ctx.fill();ctx.font="bold 16px sans-serif";ctx.textAlign="center";ctx.fillText(label,(x1+x2)/2,(y1+y2)/2-12)}
+function drawNode(ctx,x,y,text,color){ctx.fillStyle="#fff";ctx.strokeStyle=color;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,46,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=color;ctx.font="bold 20px sans-serif";ctx.textAlign="center";ctx.fillText(text,x,y+7)}
+function drawMech(){
+ var a=+$("aPath").value,b=+$("bPath").value,d=+$("direct").value;$("aVal").textContent=fmt(a);$("bVal").textContent=fmt(b);$("directVal").textContent=fmt(d);
+ var ind=a*b,total=ind+d;$("indirectOut").textContent=fmt(ind);$("directOut").textContent=fmt(d);$("totalOut").textContent=fmt(total);
+ var c=$("mechCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,390);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,390);
+ drawNode(ctx,170,230,"X","#2f6f5e");drawNode(ctx,450,115,"M","#7b4b9a");drawNode(ctx,730,230,"Y","#b56a2b");
+ drawArrow(ctx,214,215,408,135,"#2f6f5e",a,"X→M: "+fmt(a));drawArrow(ctx,492,135,686,215,"#7b4b9a",b,"M→Y: "+fmt(b));drawArrow(ctx,218,245,682,245,"#b56a2b",d,"直接效应: "+fmt(d));
+ ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("间接效应 = X→M × M→Y；总效应 = 直接效应 + 间接效应。",450,345);
+}
+["effect","conf","noise"].forEach(function(id){$(id).addEventListener("input",drawConf)})
+["aPath","bPath","direct"].forEach(function(id){$(id).addEventListener("input",drawMech)})
+drawConf();drawMech()
+</script>
+</body>
+</html>

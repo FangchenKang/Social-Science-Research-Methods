@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DID 双重差分：从反事实到政策效应</title>
+  <style>
+    :root{
+      --green:#1f5b4d;
+      --green2:#2f7a67;
+      --light:#eef7f3;
+      --cream:#fffaf1;
+      --tan:#ead7b9;
+      --brown:#92612e;
+      --ink:#1f2a2e;
+      --muted:#64706d;
+      --line:#d7e8df;
+      --red:#b34a3c;
+      --blue:#2d5f8b;
+      --shadow:0 18px 45px rgba(31,91,77,.13);
+      --radius:28px;
+    }
+    *{box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#f4fbf8 0%,#fffaf1 52%,#f3faf7 100%);
+      line-height:1.85;
+    }
+    header{
+      min-height:92vh;
+      padding:70px 8vw 40px;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:48px;
+      align-items:center;
+      border-bottom:1px solid var(--line);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(47,122,103,.13), transparent 28%),
+        radial-gradient(circle at 90% 20%, rgba(234,215,185,.45), transparent 27%);
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 14px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--green);
+      background:rgba(255,255,255,.72);
+      font-weight:700;
+      margin-bottom:22px;
+    }
+    h1{
+      font-size:clamp(38px,6vw,78px);
+      line-height:1.08;
+      margin:0 0 22px;
+      letter-spacing:-2px;
+      color:#173e35;
+    }
+    .lead{
+      font-size:clamp(18px,2vw,24px);
+      color:#43504d;
+      max-width:760px;
+      margin:0 0 28px;
+    }
+    .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;}
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius:999px;
+      padding:14px 22px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition:.18s ease;
+    }
+    .btn.primary{background:var(--green);color:white;box-shadow:0 10px 24px rgba(31,91,77,.22)}
+    .btn.secondary{background:white;color:var(--green);border:1px solid var(--line)}
+    .btn:hover{transform:translateY(-2px)}
+    .hero-card{
+      background:rgba(255,255,255,.77);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:28px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+    .mini-title{font-weight:900;color:var(--green);font-size:18px;margin-bottom:12px;}
+    .four-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+      background:white;
+      margin:18px 0;
+    }
+    .cell{
+      padding:20px;
+      min-height:118px;
+      border-right:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      position:relative;
+    }
+    .cell:nth-child(2n){border-right:0;}
+    .cell:nth-child(n+3){border-bottom:0;}
+    .cell .label{font-size:14px;color:var(--muted);font-weight:800;}
+    .cell .num{font-size:42px;line-height:1.1;font-weight:950;color:var(--green);margin-top:8px;}
+    .cell.treat{background:#f0f9f5}.cell.control{background:#fffdf8}
+    .formula-box{
+      background:#edf7f2;
+      border:1px solid #cce2d8;
+      border-radius:20px;
+      padding:18px;
+      font-weight:800;
+      color:#143d34;
+      margin-top:18px;
+      font-size:18px;
+      text-align:center;
+    }
+    nav{
+      position:sticky;
+      top:0;
+      z-index:50;
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      padding:12px 8vw;
+      background:rgba(255,255,255,.86);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:blur(12px);
+    }
+    nav a{
+      white-space:nowrap;
+      color:#27433d;
+      text-decoration:none;
+      padding:9px 13px;
+      border-radius:999px;
+      font-weight:750;
+      font-size:14px;
+    }
+    nav a:hover{background:var(--light);color:var(--green)}
+    main{padding:38px 8vw 90px;}
+    section{
+      margin:46px auto;
+      max-width:1220px;
+      background:rgba(255,255,255,.78);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:38px;
+      box-shadow:0 12px 34px rgba(31,91,77,.08);
+    }
+    h2{
+      font-size:clamp(28px,3vw,42px);
+      line-height:1.18;
+      margin:0 0 18px;
+      color:#173e35;
+      letter-spacing:-.8px;
+    }
+    h3{font-size:23px;color:#1e5649;margin:26px 0 10px;}
+    p{font-size:18px;color:#33413e;margin:14px 0;}
+    .note{
+      border-left:5px solid var(--green);
+      background:#f0f9f5;
+      padding:18px 22px;
+      border-radius:18px;
+      margin:22px 0;
+      color:#29423d;
+      font-size:18px;
+    }
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch;}
+    .card{
+      background:#fffdf8;
+      border:1px solid #eadfcd;
+      border-radius:24px;
+      padding:24px;
+      min-height:100%;
+    }
+    .card.green{background:#f0f9f5;border-color:#cfe5dc;}
+    .card h3{margin-top:0;}
+    .pill{
+      display:inline-flex;
+      padding:6px 11px;
+      border-radius:999px;
+      background:#e7f3ee;
+      color:var(--green);
+      font-weight:850;
+      font-size:14px;
+      margin-right:8px;
+      margin-bottom:8px;
+    }
+    .axis-wrap{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:24px;
+      margin-top:18px;
+    }
+    canvas{width:100%;height:360px;display:block;}
+    .controls{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin:18px 0 8px;
+    }
+    .control{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+    }
+    .control label{display:block;font-weight:850;color:#244740;margin-bottom:8px;font-size:14px;}
+    .control input{width:100%;accent-color:var(--green);}
+    .control .val{font-size:24px;font-weight:950;color:var(--green);}
+    .result-strip{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-top:18px;
+    }
+    .metric{
+      background:#f2faf6;
+      border:1px solid #cfe6dc;
+      padding:18px;
+      border-radius:20px;
+    }
+    .metric span{display:block;color:var(--muted);font-size:14px;font-weight:850;}
+    .metric strong{font-size:31px;color:#173e35;}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:20px;border:1px solid var(--line);background:white;margin:18px 0;}
+    th,td{padding:16px;border-bottom:1px solid var(--line);text-align:left;font-size:17px;}
+    th{background:#eef7f3;color:#174238;font-weight:900;}
+    tr:last-child td{border-bottom:0;}
+    .formula{
+      font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+      background:#f7f2e8;
+      border:1px solid #ead7b9;
+      color:#43301a;
+      padding:16px 18px;
+      border-radius:18px;
+      font-size:17px;
+      overflow:auto;
+      margin:18px 0;
+    }
+    .tabs{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0;}
+    .tab{border:1px solid var(--line);background:#fffdf8;color:#2c403d;border-radius:999px;padding:11px 17px;cursor:pointer;font-weight:850;}
+    .tab.active{background:var(--green);color:white;border-color:var(--green)}
+    .panel{display:none;animation:fade .18s ease;}
+    .panel.active{display:block;}
+    @keyframes fade{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .timeline{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+      margin:22px 0;
+    }
+    .step{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:20px;
+      position:relative;
+    }
+    .step .n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:white;font-weight:950;margin-bottom:12px;}
+    .quiz-item{border:1px solid var(--line);background:white;border-radius:22px;padding:22px;margin:18px 0;}
+    .quiz-options{display:grid;gap:10px;margin-top:12px;}
+    .quiz-options button{text-align:left;border:1px solid var(--line);border-radius:16px;background:#fffdf8;padding:14px;font-size:16px;cursor:pointer;}
+    .quiz-options button.correct{background:#edf7f2;border-color:#8ac5ae;color:#15493d;font-weight:900;}
+    .quiz-options button.wrong{background:#fff1ee;border-color:#e2a196;color:#762f25;font-weight:900;}
+    .answer{display:none;margin-top:12px;color:#3f4e4b;background:#f4fbf8;border-radius:14px;padding:12px;}
+    .footer{max-width:1120px;margin:40px auto 0;color:#62706d;text-align:center;font-size:15px;}
+    .tagline{font-size:20px;font-weight:900;color:#174238;}
+    .compare-box{
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      gap:18px;
+      align-items:center;
+      margin-top:18px;
+    }
+    .minus{font-size:44px;color:var(--green);font-weight:950;text-align:center;}
+    .counterfactual{
+      border:2px dashed #b8d9cb;
+      background:#f8fffb;
+      border-radius:24px;
+      padding:22px;
+    }
+    .warn{background:#fff5eb;border-color:#ead0a8;color:#5c3d18;}
+    .small{font-size:15px;color:var(--muted)}
+    @media (max-width:900px){
+      header{grid-template-columns:1fr;min-height:auto;padding-top:44px;}
+      .two-col,.controls,.result-strip,.timeline,.compare-box{grid-template-columns:1fr;}
+      .minus{font-size:28px;}
+      section{padding:26px;}
+      nav{padding:10px 4vw;}
+      main{padding:24px 4vw 70px;}
+    }
+  </style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="eyebrow">DID · 双重差分 · 反事实思维</div>
+      <h1>读懂 DID：政策效应到底从哪里来？</h1>
+      <p class="lead">这不是一页教你“怎么跑回归”的网页，而是一页帮你理解 DID 底层原理的讲义。我们会从一个最简单的问题开始：处理组政策后变好了，这一定是政策造成的吗？</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#core">开始理解 DID</a>
+        <a class="btn secondary" href="#calculator">先看小计算器</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="mini-title">最小 DID 例子</div>
+      <div class="four-grid">
+        <div class="cell treat"><div class="label">处理组 · 政策前</div><div class="num">60</div></div>
+        <div class="cell treat"><div class="label">处理组 · 政策后</div><div class="num">80</div></div>
+        <div class="cell control"><div class="label">对照组 · 政策前</div><div class="num">55</div></div>
+        <div class="cell control"><div class="label">对照组 · 政策后</div><div class="num">65</div></div>
+      </div>
+      <div class="formula-box">DID = (80 − 60) − (65 − 55) = 10</div>
+      <p class="small">这里的 10 不是“政策后提高了多少”，而是“处理组相对于对照组多提高了多少”。</p>
+    </div>
+  </header>
+
+  <nav>
+    <a href="#core">一、核心问题</a>
+    <a href="#counterfactual">二、反事实</a>
+    <a href="#formula">三、双重差分</a>
+    <a href="#calculator">四、互动计算</a>
+    <a href="#parallel">五、平行趋势</a>
+    <a href="#regression">六、回归模型</a>
+    <a href="#extensions">七、检验与误区</a>
+    <a href="#quiz">八、自测</a>
+  </nav>
+
+  <main>
+    <section id="core">
+      <h2>一、DID 的核心问题：政策后变好了，能不能说是政策造成的？</h2>
+      <p><strong>DID 要解决的不是“政策之后有没有变化”，而是“变化中有多少可以归因于政策”。</strong>一个地区在政策实施后指标上升，并不意味着政策一定有效，因为它本来可能也会上升。经济增长、技术扩散、上级考核、人口变化、宏观周期，都可能让结果变量自然变化。</p>
+      <p><strong>单纯的前后比较最大的问题，是把所有时间变化都算成政策效果。</strong>如果试点地区治理绩效从 60 分提高到 80 分，直接说政策效果是 20 分，就默认没有政策时它会停在 60 分不动。这个默认通常不可信，因为社会本来就在变化。</p>
+      <div class="note"><strong>DID 的一句话：</strong>用对照组的变化来估计处理组如果没有政策时本来会发生的变化，再用处理组真实变化减去这个反事实变化。</div>
+      <div class="two-col">
+        <div class="card green">
+          <h3>处理组</h3>
+          <p>接受政策、试点、改革或冲击的案例。比如数字乡村试点县、环保督察重点地区、改革试验区。</p>
+          <span class="pill">受到处理</span><span class="pill">政策后被观察</span>
+        </div>
+        <div class="card">
+          <h3>对照组</h3>
+          <p>没有接受政策或尚未接受政策的案例。它的作用不是“随便拿来比较”，而是帮助我们模拟处理组的反事实趋势。</p>
+          <span class="pill">未受处理</span><span class="pill">构造反事实</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="counterfactual">
+      <h2>二、DID 的底层原理：构造看不见的反事实</h2>
+      <p><strong>因果效应的本质，是“接受政策后的结果”和“如果没有政策时的结果”之间的差。</strong>问题在于，同一个处理组在同一个时间点不能同时处在“接受政策”和“没有接受政策”两种状态。我们能看到的是处理组接受政策后的现实结果，看不到它没有政策时会怎样。</p>
+      <div class="compare-box">
+        <div class="card green">
+          <h3>现实世界</h3>
+          <p>处理组接受政策后，结果变量达到 80。</p>
+          <div class="formula">Y<sub>treated, after</sub> = 80</div>
+        </div>
+        <div class="minus">−</div>
+        <div class="counterfactual">
+          <h3>反事实世界</h3>
+          <p>同一个处理组如果没有接受政策，本来会是多少？这个值无法直接观察。</p>
+          <div class="formula">Y<sub>treated, after without policy</sub> = ?</div>
+        </div>
+      </div>
+      <p><strong>DID 的创造性，就在于用对照组政策前后的变化来估计这个问号。</strong>如果对照组没有受到政策影响，它在同一时期的变化可以近似代表共同时间趋势。处理组如果没有政策，理论上也应该沿着类似趋势变化。这样，我们就能把不可观察的反事实估计出来。</p>
+    </section>
+
+    <section id="formula">
+      <h2>三、双重差分：先看变化，再比较变化</h2>
+      <p><strong>DID 的“差分中的差分”，就是先做组内前后差分，再做组间差分。</strong>第一次差分比较处理组政策前后的变化，第二次差分比较对照组政策前后的变化，最后用处理组变化减去对照组变化。</p>
+      <div class="formula">DID = (处理组政策后 − 处理组政策前) − (对照组政策后 − 对照组政策前)</div>
+      <table>
+        <thead><tr><th>比较对象</th><th>政策前</th><th>政策后</th><th>变化</th></tr></thead>
+        <tbody>
+          <tr><td>处理组</td><td>60</td><td>80</td><td>+20</td></tr>
+          <tr><td>对照组</td><td>55</td><td>65</td><td>+10</td></tr>
+          <tr><td><strong>DID</strong></td><td colspan="2">处理组变化 − 对照组变化</td><td><strong>+10</strong></td></tr>
+        </tbody>
+      </table>
+      <p><strong>这个 10 才是 DID 试图识别的政策净效应。</strong>处理组提高 20 分，其中 10 分可能是共同时间趋势，对照组也提高了；剩下处理组额外多出来的 10 分，才被解释为政策带来的变化。</p>
+    </section>
+
+    <section id="calculator">
+      <h2>四、互动计算器：自己拖动数值，观察 DID 如何变化</h2>
+      <p><strong>改变四个格子的数值，可以看到 DID 不是简单看处理组提高多少，而是看处理组相对于对照组多提高多少。</strong>当对照组也提高很多时，处理组的前后变化就不能全部算作政策效果。</p>
+      <div class="controls">
+        <div class="control"><label>处理组·前</label><input id="tpre" type="range" min="0" max="100" value="60"><div class="val" id="tpreVal">60</div></div>
+        <div class="control"><label>处理组·后</label><input id="tpost" type="range" min="0" max="100" value="80"><div class="val" id="tpostVal">80</div></div>
+        <div class="control"><label>对照组·前</label><input id="cpre" type="range" min="0" max="100" value="55"><div class="val" id="cpreVal">55</div></div>
+        <div class="control"><label>对照组·后</label><input id="cpost" type="range" min="0" max="100" value="65"><div class="val" id="cpostVal">65</div></div>
+      </div>
+      <div class="result-strip">
+        <div class="metric"><span>处理组变化</span><strong id="tChange">+20</strong></div>
+        <div class="metric"><span>对照组变化</span><strong id="cChange">+10</strong></div>
+        <div class="metric"><span>DID 估计值</span><strong id="didVal">+10</strong></div>
+      </div>
+      <div class="axis-wrap"><canvas id="didCanvas" width="980" height="380"></canvas></div>
+    </section>
+
+    <section id="parallel">
+      <h2>五、DID 最重要的假设：平行趋势</h2>
+      <p><strong>平行趋势假设是 DID 能否成立的核心前提。</strong>它的意思不是处理组和对照组在政策前必须一样，而是如果没有政策，两组本来应该沿着相似趋势变化。两组可以一个高、一个低，但它们的变化方向和变化速度应该相近。</p>
+      <div class="tabs">
+        <button class="tab active" data-panel="p1">平行趋势成立</button>
+        <button class="tab" data-panel="p2">水平不同但趋势平行</button>
+        <button class="tab" data-panel="p3">趋势不平行</button>
+        <button class="tab" data-panel="p4">提前反应</button>
+      </div>
+      <div id="p1" class="panel active">
+        <p><strong>如果政策前两组走势接近，政策后处理组突然偏离对照组，那么 DID 比较可信。</strong>这说明处理组政策后的额外变化更可能来自政策冲击。</p>
+      </div>
+      <div id="p2" class="panel">
+        <p><strong>处理组和对照组政策前水平不同，不一定破坏 DID。</strong>只要它们在没有政策时的变化趋势相似，对照组仍然可以帮助构造处理组的反事实。</p>
+      </div>
+      <div id="p3" class="panel">
+        <p><strong>如果政策前处理组本来就比对照组增长更快，DID 就会有风险。</strong>政策后的差异可能只是原有趋势延续，而不是政策带来的效果。</p>
+      </div>
+      <div id="p4" class="panel">
+        <p><strong>如果处理组在政策正式实施前已经开始变化，说明可能存在预期效应或提前行动。</strong>这会污染政策前的基准状态，让 DID 的反事实不再干净。</p>
+      </div>
+      <div class="axis-wrap"><canvas id="trendCanvas" width="980" height="380"></canvas></div>
+      <div class="note"><strong>记忆句：</strong>政策前可以不一样，但政策前的走向要差不多。</div>
+    </section>
+
+    <section id="regression">
+      <h2>六、DID 的回归模型：交互项只是反事实逻辑的表达</h2>
+      <p><strong>DID 最常见的回归模型，是把“处理组”和“政策后”相乘形成交互项。</strong>这个交互项表示“处理组在政策之后”这个状态，它对应的系数就是 DID 估计值。</p>
+      <div class="formula">Y<sub>it</sub> = α + β(Treat<sub>i</sub> × Post<sub>t</sub>) + γ<sub>i</sub> + δ<sub>t</sub> + ε<sub>it</sub></div>
+      <div class="two-col">
+        <div class="card green">
+          <h3>β 是什么？</h3>
+          <p>β 表示处理组在政策后相对于自身过去、也相对于对照组同期变化，多出来的那一部分变化。</p>
+          <p>它不是简单的处理组后期均值，也不是简单的政策前后差。</p>
+        </div>
+        <div class="card">
+          <h3>固定效应做什么？</h3>
+          <p>个体固定效应 γ<sub>i</sub> 扣掉地区长期不变的差异，时间固定效应 δ<sub>t</sub> 扣掉所有地区共同经历的时间冲击。</p>
+        </div>
+      </div>
+      <p><strong>回归模型本身并不自动保证因果识别。</strong>真正支撑 β 被解释为政策效应的，不是软件跑出了交互项，而是平行趋势、无同步冲击、无溢出效应等识别假设比较可信。</p>
+    </section>
+
+    <section id="extensions">
+      <h2>七、DID 论文最需要交代什么</h2>
+      <p><strong>一篇好的 DID 论文，不只是报告一个显著的交互项，而是要证明这个交互项有可信的反事实含义。</strong>读者真正关心的是：对照组为什么能代表处理组没有政策时的趋势？政策为什么不是被某些未观测因素选择出来的？政策前是否已经有差异趋势？政策后是否还有其他同步冲击？</p>
+      <div class="timeline">
+        <div class="step"><div class="n">1</div><strong>说明政策冲击</strong><p class="small">政策如何发生，处理组如何形成，为什么具有准自然实验含义。</p></div>
+        <div class="step"><div class="n">2</div><strong>验证平行趋势</strong><p class="small">用事件研究或政策前趋势图说明处理组和对照组走势接近。</p></div>
+        <div class="step"><div class="n">3</div><strong>报告基准结果</strong><p class="small">解释 β 的含义，而不是只说显著或不显著。</p></div>
+        <div class="step"><div class="n">4</div><strong>做稳健性检验</strong><p class="small">排除替代解释，检验样本、变量、时间窗口和安慰剂结果。</p></div>
+      </div>
+      <div class="two-col">
+        <div class="card warn">
+          <h3>常见风险</h3>
+          <p>处理组政策前已经有更快增长；处理组提前知道政策并提前行动；对照组受到政策溢出影响；政策后同时发生另一项只影响处理组的重大改革。</p>
+        </div>
+        <div class="card green">
+          <h3>常见补救</h3>
+          <p>事件研究、安慰剂检验、排除同期政策、替换结果变量、改变样本范围、加入控制变量、使用匹配后 DID 或更稳健的交错 DID 方法。</p>
+        </div>
+      </div>
+      <div class="note"><strong>DID 的核心不是“有两组、有两期”，而是“能否构造可信反事实”。</strong></div>
+    </section>
+
+    <section id="quiz">
+      <h2>八、读完自测：你是否真的理解 DID</h2>
+      <div class="quiz-item">
+        <p><strong>问题 1：</strong>处理组政策后从 60 提高到 80，能否直接说政策效应是 20？</p>
+        <div class="quiz-options">
+          <button data-correct="false">可以，因为政策后确实提高了 20</button>
+          <button data-correct="true">不可以，因为还要扣除没有政策时本来也会发生的变化</button>
+        </div>
+        <div class="answer">正确理解：20 是处理组的总变化，不是政策净效应。DID 要用对照组变化构造反事实。</div>
+      </div>
+      <div class="quiz-item">
+        <p><strong>问题 2：</strong>平行趋势要求处理组和对照组政策前水平完全相同吗？</p>
+        <div class="quiz-options">
+          <button data-correct="false">要求，水平不同就不能做 DID</button>
+          <button data-correct="true">不要求，关键是没有政策时两组变化趋势应相似</button>
+        </div>
+        <div class="answer">正确理解：DID 不要求政策前水平一样，要求政策前趋势相近。</div>
+      </div>
+      <div class="quiz-item">
+        <p><strong>问题 3：</strong>DID 回归中的 Treat × Post 交互项代表什么？</p>
+        <div class="quiz-options">
+          <button data-correct="true">处理组在政策后相对于对照组和自身过去多出来的变化</button>
+          <button data-correct="false">处理组和对照组之间所有差异</button>
+        </div>
+        <div class="answer">正确理解：交互项对应 DID 估计值，含义是政策后的额外变化，而不是所有组间差异。</div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <p class="tagline">一句话收束：DID 的本质不是交互项，而是反事实。</p>
+      <p>当对照组能够合理代表处理组没有政策时的变化趋势时，处理组相对于对照组多出来的变化，才可以被解释为政策效应。</p>
+    </div>
+  </main>
+
+  <script>
+    const fmt = v => v > 0 ? '+'+v : String(v);
+    const ids = ['tpre','tpost','cpre','cpost'];
+    const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+    const vals = Object.fromEntries(ids.map(id => [id, document.getElementById(id+'Val')]));
+    const canvas = document.getElementById('didCanvas');
+    const ctx = canvas.getContext('2d');
+    function drawDID(){
+      const tpre=+els.tpre.value, tpost=+els.tpost.value, cpre=+els.cpre.value, cpost=+els.cpost.value;
+      ids.forEach(id => vals[id].textContent = els[id].value);
+      const tc=tpost-tpre, cc=cpost-cpre, did=tc-cc;
+      document.getElementById('tChange').textContent=fmt(tc);
+      document.getElementById('cChange').textContent=fmt(cc);
+      document.getElementById('didVal').textContent=fmt(did);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const pad=58, w=canvas.width, h=canvas.height, yMax=105;
+      const x1=pad+120, x2=w-pad-120;
+      const y = val => h-pad - val/yMax*(h-2*pad);
+      ctx.strokeStyle='#d7e8df'; ctx.lineWidth=1;
+      for(let i=0;i<=5;i++){let yy=pad+i*(h-2*pad)/5;ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();}
+      ctx.fillStyle='#64706d'; ctx.font='16px sans-serif';
+      ctx.fillText('政策前',x1-28,h-22);ctx.fillText('政策后',x2-28,h-22);
+      function line(a,b,color,label){
+        ctx.strokeStyle=color;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x1,y(a));ctx.lineTo(x2,y(b));ctx.stroke();
+        ctx.fillStyle=color;ctx.beginPath();ctx.arc(x1,y(a),7,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x2,y(b),7,0,Math.PI*2);ctx.fill();
+        ctx.font='bold 17px sans-serif';ctx.fillText(label,x2+15,y(b)+5);
+      }
+      line(tpre,tpost,'#1f5b4d','处理组');
+      line(cpre,cpost,'#92612e','对照组');
+      // counterfactual line: treat pre + control change
+      const cf=tpre+cc;
+      ctx.strokeStyle='#2d5f8b'; ctx.lineWidth=3; ctx.setLineDash([9,8]);
+      ctx.beginPath();ctx.moveTo(x1,y(tpre));ctx.lineTo(x2,y(cf));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#2d5f8b';ctx.font='bold 15px sans-serif';ctx.fillText('处理组反事实：若无政策',x2-170,y(cf)-12);
+      // effect bracket
+      ctx.strokeStyle='#b34a3c'; ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(x2+70,y(cf));ctx.lineTo(x2+70,y(tpost));ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x2+62,y(cf));ctx.lineTo(x2+78,y(cf));ctx.moveTo(x2+62,y(tpost));ctx.lineTo(x2+78,y(tpost));ctx.stroke();
+      ctx.fillStyle='#b34a3c';ctx.font='bold 16px sans-serif';ctx.fillText('DID='+fmt(did),x2+82,(y(cf)+y(tpost))/2+5);
+    }
+    ids.forEach(id => els[id].addEventListener('input', drawDID));
+    drawDID();
+
+    const trendCanvas=document.getElementById('trendCanvas');
+    const tctx=trendCanvas.getContext('2d');
+    function drawTrend(type='p1'){
+      tctx.clearRect(0,0,trendCanvas.width,trendCanvas.height);
+      const w=trendCanvas.width,h=trendCanvas.height,pad=58;
+      tctx.strokeStyle='#d7e8df';tctx.lineWidth=1;
+      for(let i=0;i<=5;i++){let yy=pad+i*(h-2*pad)/5;tctx.beginPath();tctx.moveTo(pad,yy);tctx.lineTo(w-pad,yy);tctx.stroke();}
+      const xs=[pad+70,pad+230,pad+390,pad+550,pad+710,w-pad-70];
+      const y=v=>h-pad-v/100*(h-2*pad);
+      const policyX=xs[3];
+      tctx.strokeStyle='#b34a3c';tctx.lineWidth=2;tctx.setLineDash([6,7]);tctx.beginPath();tctx.moveTo(policyX,pad);tctx.lineTo(policyX,h-pad);tctx.stroke();tctx.setLineDash([]);
+      tctx.fillStyle='#b34a3c';tctx.font='bold 15px sans-serif';tctx.fillText('政策发生',policyX-28,pad-18);
+      let treat,control;
+      if(type==='p1'){treat=[45,50,55,60,75,88];control=[40,45,50,55,60,65];}
+      if(type==='p2'){treat=[60,65,70,75,90,98];control=[35,40,45,50,55,60];}
+      if(type==='p3'){treat=[38,48,60,73,86,98];control=[40,43,46,49,52,55];}
+      if(type==='p4'){treat=[40,45,54,68,80,90];control=[38,43,48,53,58,63];}
+      function draw(vals,color,label){
+        tctx.strokeStyle=color;tctx.lineWidth=5;tctx.beginPath();
+        vals.forEach((v,i)=>{if(i===0)tctx.moveTo(xs[i],y(v));else tctx.lineTo(xs[i],y(v));});tctx.stroke();
+        tctx.fillStyle=color;vals.forEach((v,i)=>{tctx.beginPath();tctx.arc(xs[i],y(v),6,0,Math.PI*2);tctx.fill();});
+        tctx.font='bold 17px sans-serif';tctx.fillText(label,xs[xs.length-1]+15,y(vals[vals.length-1])+5);
+      }
+      draw(treat,'#1f5b4d','处理组');draw(control,'#92612e','对照组');
+      tctx.fillStyle='#64706d';tctx.font='14px sans-serif';['t-3','t-2','t-1','t','t+1','t+2'].forEach((d,i)=>tctx.fillText(d,xs[i]-11,h-22));
+    }
+    drawTrend();
+    document.querySelectorAll('.tab').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.panel).classList.add('active');
+        drawTrend(btn.dataset.panel);
+      });
+    });
+    document.querySelectorAll('.quiz-options button').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const group=btn.parentElement;
+        group.querySelectorAll('button').forEach(b=>{b.classList.remove('correct','wrong');b.disabled=true;});
+        btn.classList.add(btn.dataset.correct==='true'?'correct':'wrong');
+        if(btn.dataset.correct!=='true'){
+          group.querySelector('button[data-correct="true"]').classList.add('correct');
+        }
+        group.nextElementSibling.style.display='block';
+      })
+    })
+  </script>
+</body>
+</html>

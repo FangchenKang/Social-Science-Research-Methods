@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>双重机器学习 DML：背后的原理</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;--green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--red:#a33b3b;--soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf;--soft4:#f7e7e7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:56px 22px 30px}.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:700;font-size:13px;letter-spacing:.08em}
+h1{max-width:1060px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}.subtitle{max-width:900px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1160px,92vw);margin:0 auto 70px}.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}h3{margin:16px 0 8px;font-size:20px}p{margin:10px 0;color:#2c2d2f}.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}.soft4{background:var(--soft4)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}.nodebox{min-width:128px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}.nodebox.purple{border-color:var(--purple);color:var(--purple)}.nodebox.orange{border-color:var(--orange);color:var(--orange)}.nodebox.red{border-color:var(--red);color:var(--red)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.tabs,.btns{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.tab,.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}.tab.active,.btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.panel{display:none}.panel.active{display:block}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}label{display:block;font-weight:750}input[type=range]{width:100%}.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}
+.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:390px;background:#fff;border:1px solid var(--line);border-radius:20px}.mini{font-size:14px;color:var(--muted)}.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}@media(max-width:900px){.grid,.grid3,.grid4,.controls,.output{grid-template-columns:1fr}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">METHOD NOTE</span>
+<h1>双重机器学习：用机器学习处理复杂控制变量，用因果推断识别核心效应</h1>
+<p class="subtitle">双重机器学习的核心不是“用机器学习做因果推断”，而是让机器学习负责预测和控制复杂混杂因素，让正交化与样本拆分保护核心因果系数。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#intuition">核心直觉</a><a href="#background">学术背景</a><a href="#problem">要解决的问题</a><a href="#partial">残差化</a><a href="#double">为什么叫双重</a><a href="#crossfit">交叉拟合</a><a href="#model">基本模型</a><a href="#demo">互动演示</a><a href="#workflow">研究流程</a><a href="#examples">公共管理实例</a><a href="#pitfalls">常见误区</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心直觉：机器学习很会预测，但因果推断要保护“核心变量”</h2>
+<p class="lead">双重机器学习，英文是 Double Machine Learning，简称 DML。它用于一种常见场景：研究者关心一个核心处理变量 D 对结果 Y 的因果效应，但同时有很多控制变量 X，而且这些控制变量和 Y、D 之间的关系非常复杂。传统线性回归可能控制不充分，普通机器学习又更擅长预测，不会自动给出可信因果效应。DML 的思路是：让机器学习先把复杂控制变量的影响剥离掉，再在剩下的“净变化”中估计 D 对 Y 的影响。</p>
+<div class="quote">一句话记住：DML 用机器学习控制复杂混杂，用残差之间的关系估计因果效应。</div>
+<div class="diagram">
+<div class="nodebox">控制变量 X<br>地区、个人、组织特征</div><div class="arrow"></div><div class="nodebox purple">机器学习<br>预测 Y 和 D</div><div class="arrow"></div><div class="nodebox orange">残差化后<br>估计 D → Y</div>
+</div>
+</section>
+
+<section id="background">
+<h2>二、学术背景：DML 是因果推断与机器学习结合的代表路径</h2>
+<p>双重机器学习由 Chernozhukov 等人在 2018 年前后系统提出，背后连接了三个研究传统：半参数计量经济学、机器学习预测方法和现代因果推断。它要解决的不是“如何预测更准”，而是“在高维控制变量和复杂函数关系下，如何仍然得到稳定的因果估计”。</p>
+<table>
+<tr><th>理论来源</th><th>核心思想</th><th>对 DML 的贡献</th></tr>
+<tr><td>Frisch-Waugh-Lovell 定理</td><td>控制变量后的回归可以理解为先残差化，再回归残差</td><td>提供“先剥离 X，再估计 D 对 Y 影响”的直觉基础。</td></tr>
+<tr><td>半参数计量经济学</td><td>核心参数有限，但干扰函数可以很复杂</td><td>把研究者真正关心的因果系数与复杂控制函数区分开。</td></tr>
+<tr><td>机器学习</td><td>随机森林、Lasso、Boosting、神经网络等可以拟合复杂关系</td><td>用于估计 Y 与 X、D 与 X 之间的复杂预测函数。</td></tr>
+<tr><td>正交化思想</td><td>让干扰函数估计误差对核心参数影响尽量小</td><td>使机器学习预测误差不至于直接污染因果系数。</td></tr>
+<tr><td>样本拆分与交叉拟合</td><td>训练模型和估计效应使用不同样本</td><td>减少过拟合，避免“自己预测自己”带来的偏误。</td></tr>
+</table>
+<div class="quote">DML 的学术定位是：把机器学习放在辅助位置，让它服务于因果识别，而不是让预测模型替代因果设计。</div>
+</section>
+
+<section id="problem">
+<h2>三、要解决的问题：高维控制、非线性关系和过拟合</h2>
+<p>在政治学和公共管理研究中，控制变量往往很多，而且关系不一定线性。比如研究数字政府建设是否提高公众满意度，地区经济水平、财政能力、人口结构、互联网普及、治理基础、产业结构都可能同时影响政策选择和满意度。如果只用线性控制，可能控制不充分；如果直接用机器学习，又难以解释核心政策效应。</p>
+<div class="grid3">
+<div class="card soft"><span class="tag">高维控制</span><h3>变量太多</h3><p>控制变量数量多、相互相关，传统回归容易不稳定。</p></div>
+<div class="card soft2"><span class="tag">非线性关系</span><h3>关系复杂</h3><p>控制变量可能以非线性、交互、阈值形式影响结果和处理变量。</p></div>
+<div class="card soft3"><span class="tag">过拟合风险</span><h3>预测太贴合样本</h3><p>机器学习如果直接在同一批样本中预测和估计，可能把噪声也当成结构。</p></div>
+</div>
+<div class="formula">普通回归担心：控制函数设错。<br>普通机器学习担心：预测准确但因果含义不清。<br>DML 的目标：既允许复杂控制，又保护核心因果效应。</div>
+</section>
+
+<section id="partial">
+<h2>四、残差化：把 X 的影响先剥离掉</h2>
+<p>DML 最重要的直觉，可以从残差化理解。研究者先用机器学习预测 Y 中能被 X 解释的部分，再取残差；同时用机器学习预测 D 中能被 X 解释的部分，再取残差。最后，用 Y 的残差回归 D 的残差。</p>
+<div class="formula">第一步：Y = g(X) + 残差_Y<br>第二步：D = m(X) + 残差_D<br>第三步：残差_Y = θ · 残差_D + 误差</div>
+<p>这里的 θ 就是关心的核心因果参数。它表示在剥离 X 对 Y 和 D 的影响后，D 中剩下的变化是否还能解释 Y 中剩下的变化。</p>
+<div class="diagram">
+<div class="nodebox">Y 中被 X 解释的部分</div><div class="arrow"></div><div class="nodebox purple">剥离</div><div class="arrow"></div><div class="nodebox orange">Y 的净残差</div>
+</div>
+<div class="diagram">
+<div class="nodebox">D 中被 X 解释的部分</div><div class="arrow"></div><div class="nodebox purple">剥离</div><div class="arrow"></div><div class="nodebox orange">D 的净残差</div>
+</div>
+</section>
+
+<section id="double">
+<h2>五、为什么叫“双重”：双重残差化与双重稳健思想</h2>
+<p>“双重机器学习”中的“双重”可以从两个层面理解。最直观的是双重残差化：既要用机器学习预测结果变量 Y，也要用机器学习预测处理变量 D。更深一层是正交化思想：通过构造特殊的估计方程，让第一阶段机器学习对干扰函数的估计误差，对第二阶段核心参数影响尽量小。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">第一重</span><h3>预测 Y</h3><p>用 X 预测结果变量，剥离控制变量对结果的复杂影响。</p></div>
+<div class="card soft2"><span class="tag">第二重</span><h3>预测 D</h3><p>用 X 预测处理变量，剥离控制变量对处理选择的复杂影响。</p></div>
+</div>
+<div class="quote">DML 的关键不是“用了两个机器学习模型”，而是通过双重残差化和正交化，降低控制函数估计误差对因果参数的影响。</div>
+</section>
+
+<section id="crossfit">
+<h2>六、交叉拟合：不要用同一批数据既训练又估计</h2>
+<p>机器学习模型很容易过拟合。如果用同一批样本训练 g(X)、m(X)，再在同一批样本上估计 θ，模型可能把噪声也学进去。DML 通常使用样本拆分和交叉拟合：一部分样本训练机器学习模型，另一部分样本生成残差并估计效应，然后交换样本角色，最后合并结果。</p>
+<div class="diagram">
+<div class="nodebox">样本 A<br>训练模型</div><div class="arrow"></div><div class="nodebox purple">样本 B<br>生成残差</div><div class="arrow"></div><div class="nodebox orange">估计效应</div>
+</div>
+<div class="diagram">
+<div class="nodebox">样本 B<br>训练模型</div><div class="arrow"></div><div class="nodebox purple">样本 A<br>生成残差</div><div class="arrow"></div><div class="nodebox orange">合并估计</div>
+</div>
+<p>交叉拟合的作用，是让每个样本的残差都来自“没有见过它”的模型预测，从而减少过拟合带来的偏误。</p>
+</section>
+
+<section id="model">
+<h2>七、基本模型：部分线性模型最容易理解</h2>
+<p>DML 最常见的入门形式，是部分线性模型。它假设 D 对 Y 的效应是线性的，但 X 对 Y 和 D 的影响可以非常复杂。</p>
+<div class="formula">Y = θD + g(X) + ε<br>D = m(X) + v</div>
+<p>这里 θ 是核心因果效应，g(X) 和 m(X) 是干扰函数，也叫 nuisance functions。研究者真正关心的是 θ，而不是 g(X) 和 m(X) 的具体形式。机器学习负责估计这些复杂函数，因果推断负责解释 θ。</p>
+<table>
+<tr><th>符号</th><th>含义</th><th>解释</th></tr>
+<tr><td>Y</td><td>结果变量</td><td>满意度、参与率、治理绩效、信任程度</td></tr>
+<tr><td>D</td><td>处理变量</td><td>政策实施、平台上线、AI 介入、制度改革</td></tr>
+<tr><td>X</td><td>控制变量</td><td>地区、组织、个人和情境特征</td></tr>
+<tr><td>θ</td><td>核心因果参数</td><td>控制 X 后，D 对 Y 的净效应</td></tr>
+<tr><td>g(X)、m(X)</td><td>干扰函数</td><td>机器学习处理的复杂预测函数</td></tr>
+</table>
+</section>
+
+<section id="demo">
+<h2>八、互动演示：控制得越充分，残差关系越接近真实效应</h2>
+<div class="tabs"><button class="tab active" data-tab="residPanel">残差化演示</button><button class="tab" data-tab="crossPanel">交叉拟合演示</button></div>
+
+<div class="panel active" id="residPanel">
+<p>调整混杂强度和机器学习控制能力。控制能力越强，残差回归越接近真实效应。</p>
+<div class="controls">
+<div><label>真实效应 θ <span class="value" id="thetaVal">0.70</span></label><input id="theta" type="range" min="-1" max="1.5" step="0.1" value="0.7"></div>
+<div><label>混杂强度 <span class="value" id="confVal">1.00</span></label><input id="conf" type="range" min="0" max="2" step="0.1" value="1"></div>
+<div><label>控制能力 <span class="value" id="controlVal">0.80</span></label><input id="control" type="range" min="0" max="1" step="0.05" value="0.8"></div>
+</div>
+<canvas id="residCanvas" width="900" height="390"></canvas>
+<div class="output"><div class="metric"><span>真实效应</span><strong id="trueOut">0.70</strong></div><div class="metric"><span>朴素估计</span><strong id="naiveOut">0.00</strong></div><div class="metric"><span>DML 估计</span><strong id="dmlOut">0.00</strong></div></div>
+</div>
+
+<div class="panel" id="crossPanel">
+<p>调整过拟合风险。交叉拟合的作用，是避免模型在同一批数据中既学习噪声又估计效应。</p>
+<div class="controls">
+<div><label>过拟合风险 <span class="value" id="overfitVal">0.60</span></label><input id="overfit" type="range" min="0" max="1" step="0.05" value="0.6"></div>
+<div><label>样本拆分</label><input type="range" min="0" max="1" value="0" disabled></div>
+<div><label>估计稳定性 <span class="value" id="stableVal">较高</span></label><input type="range" min="0" max="1" value="0" disabled></div>
+</div>
+<canvas id="crossCanvas" width="900" height="390"></canvas>
+<div class="output"><div class="metric"><span>不拆分偏误风险</span><strong id="noSplitOut">高</strong></div><div class="metric"><span>交叉拟合风险</span><strong id="splitOut">低</strong></div><div class="metric"><span>核心原则</span><strong>样本外预测</strong></div></div>
+</div>
+</section>
+
+<section id="workflow">
+<h2>九、DML 研究通常怎么做</h2>
+<div class="grid4">
+<div class="card soft"><span class="tag">第一步</span><h3>明确因果问题</h3><p>确定核心处理变量 D、结果变量 Y 和需要控制的混杂变量 X。</p></div>
+<div class="card soft2"><span class="tag">第二步</span><h3>选择机器学习器</h3><p>用 Lasso、随机森林、Boosting、神经网络等预测 Y 和 D。</p></div>
+<div class="card soft3"><span class="tag">第三步</span><h3>残差化与交叉拟合</h3><p>在样本外预测中生成残差，避免过拟合污染第二阶段。</p></div>
+<div class="card soft4"><span class="tag">第四步</span><h3>估计因果效应</h3><p>用残差_Y 回归残差_D，得到核心参数 θ，并做稳健性检验。</p></div>
+</div>
+<p>论文中不能只说“用了 DML”。必须说明处理变量是什么、控制变量为什么是混杂因素、使用了哪些学习器、如何交叉拟合、估计对象是 ATE 还是局部/条件效应。</p>
+</section>
+
+<section id="examples">
+<h2>十、政治学和公共管理中的应用场景</h2>
+<p>DML 特别适合“控制变量多、关系复杂、但研究者关心一个清晰政策效应”的问题。</p>
+<table>
+<tr><th>研究问题</th><th>D</th><th>Y</th><th>X</th><th>DML 的价值</th></tr>
+<tr><td>数字政府建设是否提升政务服务满意度？</td><td>数字政府试点或平台上线</td><td>公众满意度、办事效率</td><td>经济水平、财政能力、人口结构、互联网基础、治理基础</td><td>处理复杂地区差异，估计平台建设净效应。</td></tr>
+<tr><td>AI 政务助手是否提高使用意愿？</td><td>AI 介入或服务质量处理</td><td>使用意愿、信任、满意度</td><td>AI 素养、教育、年龄、数字经验、政府信任</td><td>在大量个体特征和非线性关系下估计处理效应。</td></tr>
+<tr><td>环境督察是否改善环境治理绩效？</td><td>督察进入或问责压力</td><td>污染指标、治理投入</td><td>产业结构、财政压力、人口密度、历史污染、政治激励</td><td>增强高维控制下的政策评估可信度。</td></tr>
+<tr><td>基层治理平台是否降低纠纷处理成本？</td><td>平台建设或综治中心升级</td><td>处理时长、满意度、重复投诉率</td><td>社区规模、案件类型、干部配置、人口流动、历史纠纷水平</td><td>从复杂治理情境中提取制度升级的净影响。</td></tr>
+</table>
+</section>
+
+<section id="pitfalls">
+<h2>十一、常见误区：DML 不是因果推断的自动机器</h2>
+<div class="grid">
+<div class="card"><h3>误区一：用了机器学习就更因果</h3><p>机器学习本身解决预测问题，不自动解决内生性。DML 仍然依赖可忽略性、工具变量或其他识别假设。</p></div>
+<div class="card"><h3>误区二：控制变量越多越好</h3><p>控制变量必须是合理混杂因素。处理后变量、中介变量和碰撞点不能随便放入 X。</p></div>
+<div class="card"><h3>误区三：只报告一个 θ</h3><p>DML 的可信度还需要报告学习器、交叉拟合、样本拆分、稳健性和变量选择逻辑。</p></div>
+<div class="card"><h3>误区四：忽视理论解释</h3><p>DML 可以提高控制复杂性的能力，但不能替代理论机制、制度背景和研究设计。</p></div>
+</div>
+<div class="quote">DML 的正确位置是：在已有因果识别设计下，增强对复杂控制变量的处理能力。</div>
+</section>
+
+<section id="quiz">
+<h2>十二、自测</h2>
+<div class="qa"><strong>问题 1：</strong>DML 为什么要同时预测 Y 和 D？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">因为 X 既可能影响结果 Y，也可能影响处理变量 D。只有同时剥离 X 对 Y 和 D 的影响，才能在残差层面估计 D 对 Y 的净效应。</div></div>
+<div class="qa"><strong>问题 2：</strong>交叉拟合解决什么问题？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">交叉拟合通过样本外预测减少过拟合，避免同一批数据既训练机器学习模型又估计因果效应。</div></div>
+<div class="qa"><strong>问题 3：</strong>DML 能否自动解决遗漏变量问题？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">不能。DML 可以更灵活地控制已观测混杂因素，但不能自动控制未观测混杂，也不能替代研究设计。</div></div>
+</section>
+</main>
+<div class="footer">一句话记住：DML 让机器学习处理复杂控制变量，让正交化和交叉拟合保护核心因果效应。</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+document.querySelectorAll(".tab").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(b){b.classList.remove("active")});document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active")});btn.classList.add("active");$(btn.dataset.tab).classList.add("active");drawResid();drawCross()})})
+function toggleAnswer(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block"}
+function fmt(x){return (Math.round(x*100)/100).toFixed(2)}
+function seededNoise(i){var x=Math.sin(i*9301+49297)*233280;return x-Math.floor(x)}
+function slope(pts,xkey,ykey){var n=pts.length,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(p=>{sx+=p[xkey];sy+=p[ykey]});sx/=n;sy/=n;pts.forEach(p=>{sxx+=(p[xkey]-sx)*(p[xkey]-sx);sxy+=(p[xkey]-sx)*(p[ykey]-sy)});return sxy/sxx}
+function drawResid(){
+ var theta=+$("theta").value,conf=+$("conf").value,control=+$("control").value;
+ $("thetaVal").textContent=fmt(theta);$("confVal").textContent=fmt(conf);$("controlVal").textContent=fmt(control);
+ var pts=[],n=90;for(var i=0;i<n;i++){var x=(seededNoise(i)-.5)*4;var d=conf*x+(seededNoise(i+10)-.5)*2;var y=theta*d+conf*x+(seededNoise(i+20)-.5)*2;var dres=d-control*conf*x;var yres=y-control*conf*x;pts.push({d:d,y:y,dres:dres,yres:yres})}
+ var naive=slope(pts,"d","y"),dml=slope(pts,"dres","yres");$("trueOut").textContent=fmt(theta);$("naiveOut").textContent=fmt(naive);$("dmlOut").textContent=fmt(dml);
+ var c=$("residCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,390);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,390);
+ var left=70,right=830,top=38,bottom=300;function mx(v){return left+(v+5)/10*(right-left)}function my(v){return bottom-(v+5)/10*(bottom-top)}
+ ctx.strokeStyle="#ddd6c7";ctx.lineWidth=1;for(var k=0;k<=5;k++){var yy=top+k*(bottom-top)/5;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke()}
+ pts.forEach(p=>{ctx.fillStyle="#2f6f5e";ctx.globalAlpha=.7;ctx.beginPath();ctx.arc(mx(p.dres),my(p.yres),4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1})
+ function line(m,color,label,off){ctx.strokeStyle=color;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(mx(-4),my(m*(-4)));ctx.lineTo(mx(4),my(m*4));ctx.stroke();ctx.fillStyle=color;ctx.font="bold 14px sans-serif";ctx.fillText(label,mx(2.2),my(m*2.2)+off)}
+ line(theta,"#7b4b9a","真实效应",16);line(dml,"#b56a2b","残差回归估计",-10);
+ ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("图中展示残差_D 与残差_Y。控制越充分，残差回归越接近真实效应。",450,350)
+}
+function drawCross(){
+ var over=+$("overfit").value;$("overfitVal").textContent=fmt(over);$("stableVal").textContent=over>.6?"中等":"较高";$("noSplitOut").textContent=over>.5?"高":"中";$("splitOut").textContent=over>.7?"中":"低";
+ var c=$("crossCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,390);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,390);
+ function box(x,y,w,h,text,color){ctx.fillStyle="#fff";ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x,y,w,h,18);ctx.fill();ctx.stroke();ctx.fillStyle=color;ctx.font="bold 18px sans-serif";ctx.textAlign="center";text.split("\\n").forEach((t,i)=>ctx.fillText(t,x+w/2,y+43+i*26))}
+ function arr(x1,y1,x2,y2,color){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();var a=Math.atan2(y2-y1,x2-x1);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-12*Math.cos(a-.45),y2-12*Math.sin(a-.45));ctx.lineTo(x2-12*Math.cos(a+.45),y2-12*Math.sin(a+.45));ctx.closePath();ctx.fill()}
+ box(80,70,180,90,"样本 A\\n训练模型","#2f6f5e");box(360,70,180,90,"样本 B\\n生成残差","#7b4b9a");box(640,70,180,90,"估计 θ\\n样本外预测","#b56a2b");arr(260,115,360,115,"#2f6f5e");arr(540,115,640,115,"#7b4b9a");
+ box(80,220,180,90,"样本 B\\n训练模型","#2f6f5e");box(360,220,180,90,"样本 A\\n生成残差","#7b4b9a");box(640,220,180,90,"合并估计\\n降低过拟合","#b56a2b");arr(260,265,360,265,"#2f6f5e");arr(540,265,640,265,"#7b4b9a");
+ ctx.globalAlpha=.18+over*.35;ctx.fillStyle="#a33b3b";ctx.fillRect(55,45,790,290);ctx.globalAlpha=1;
+ ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("交叉拟合的核心：每个样本的预测都来自没有见过它的模型。",450,350)
+}
+["theta","conf","control"].forEach(id=>$(id).addEventListener("input",drawResid))
+$("overfit").addEventListener("input",drawCross)
+drawResid();drawCross()
+</script>
+</body>
+</html>

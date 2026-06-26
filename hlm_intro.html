@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多层模型 HLM：背后的原理</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;--green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:56px 22px 30px}.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:700;font-size:13px;letter-spacing:.08em}
+h1{max-width:1000px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}.subtitle{max-width:850px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1120px,92vw);margin:0 auto 70px}.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}h3{margin:16px 0 8px;font-size:20px}p{margin:10px 0;color:#2c2d2f}.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}.node{min-width:120px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}.node.purple{border-color:var(--purple);color:var(--purple)}.node.orange{border-color:var(--orange);color:var(--orange)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 18px}.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:750}.tab.active{background:var(--green);color:#fff;border-color:var(--green)}.panel{display:none}.panel.active{display:block}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}label{display:block;font-weight:750}input[type=range]{width:100%}.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:350px;background:#fff;border:1px solid var(--line);border-radius:20px}.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}@media(max-width:820px){.grid,.grid3,.controls,.output{grid-template-columns:1fr}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">METHOD NOTE</span>
+<h1>多层模型 HLM：把“个体嵌套在组织和地区中”放进模型</h1>
+<p class="subtitle">HLM 的核心不是多跑一层回归，而是承认数据有层级结构：个人属于社区，学生属于学校，居民属于城市。上层环境会塑造下层个体，个体也不能被当作完全独立样本。</p>
+</header>
+
+<main>
+<nav class="nav">
+<a href="#intuition">核心直觉</a><a href="#why">为什么需要</a><a href="#icc">ICC</a><a href="#intercept">随机截距</a><a href="#slope">随机斜率</a><a href="#cross">跨层互动</a><a href="#center">中心化</a><a href="#demo">互动演示</a><a href="#workflow">研究流程</a><a href="#pitfalls">常见误区</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心直觉：个体不是漂浮在真空中的个体</h2>
+<p class="lead">多层模型，英文常叫 Hierarchical Linear Model，简称 HLM，也常被称为 Multilevel Model。它适合处理嵌套数据：学生嵌套在学校中，居民嵌套在社区中，企业嵌套在城市中，个人嵌套在国家中。它的底层判断是，同一上层单位内部的样本更相似，因此不能把所有样本都当作彼此独立。</p>
+<div class="quote">一句话记住：普通回归只看“个人差异”，HLM 同时看“个人差异”和“环境差异”。</div>
+<div class="diagram"><div class="node">个体层<br>居民/学生/企业</div><div class="arrow"></div><div class="node purple">组织或社区层<br>学校/社区/城市</div><div class="arrow"></div><div class="node orange">更高层<br>省份/国家</div></div>
+</section>
+
+<section id="why">
+<h2>二、为什么需要 HLM：同一组内部的人往往更像</h2>
+<p>普通 OLS 回归默认每个观察值相互独立，但嵌套数据通常不满足这个条件。同一学校的学生会共享教师、校风和资源；同一社区的居民会共享空间环境、物业服务和治理能力；同一城市的企业会共享政策环境、产业基础和市场条件。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">统计问题</span><h3>标准误可能被低估</h3><p>如果同一社区内居民高度相似，却被当作完全独立样本，模型会以为信息量比实际更多，显著性可能被夸大。</p></div>
+<div class="card soft2"><span class="tag">理论问题</span><h3>环境影响会被遗漏</h3><p>如果只研究个人特征，就会忽略社区治理能力、学校资源、城市政策环境等上层因素对个体结果的影响。</p></div>
+</div>
+</section>
+
+<section id="icc">
+<h2>三、ICC：先看差异有多少来自上层单位</h2>
+<p>HLM 通常从空模型开始。空模型没有解释变量，只把结果变量的差异拆成两部分：组内差异和组间差异。ICC 就是组间差异占总差异的比例。</p>
+<div class="formula">ICC = 组间方差 / (组间方差 + 组内方差)<br>ICC 越高，说明同一组内样本越相似，上层环境越重要。</div>
+<p>比如研究居民政治参与，如果 ICC = 0.18，说明大约 18% 的参与差异来自社区之间的差异，而不是个人之间的差异。这就提示我们，不能只用个人层变量解释政治参与，还要考虑社区层因素。</p>
+</section>
+
+<section id="intercept">
+<h2>四、随机截距模型：不同组可以有不同起点</h2>
+<p>随机截距模型允许每个上层单位拥有自己的基础水平。比如不同社区的平均参与意愿本来就不同，有的社区组织活跃，有的社区较为冷淡。随机截距就是承认这种“起点差异”。</p>
+<div class="formula">第一层：Y_ij = β0j + β1 X_ij + r_ij<br>第二层：β0j = γ00 + u0j<br>合起来：Y_ij = γ00 + β1X_ij + u0j + r_ij</div>
+<p>这里 i 表示个人，j 表示社区。u0j 表示第 j 个社区相对于总体平均水平的偏离。它不是误差，而是社区层面的随机差异。</p>
+</section>
+
+<section id="slope">
+<h2>五、随机斜率模型：同一个变量在不同组中的作用可以不同</h2>
+<p>随机斜率模型进一步认为，个人层变量的影响不一定在所有社区都一样。比如教育程度对政治参与的影响，可能在组织动员强的社区更强，在组织动员弱的社区更弱。</p>
+<div class="formula">Y_ij = β0j + β1j X_ij + r_ij<br>β1j = γ10 + u1j</div>
+<p>这里 β1j 表示 X 在第 j 个社区中的影响。随机斜率允许每个社区有自己的斜率，从而把“同一个个人特征为什么在不同环境中作用不同”纳入模型。</p>
+</section>
+
+<section id="cross">
+<h2>六、跨层互动：上层环境如何改变个人变量的作用</h2>
+<p>跨层互动是 HLM 最有解释力的部分。它关注上层变量 W 是否会改变个人层变量 X 对结果 Y 的影响。比如社区组织密度是否会增强居民政治兴趣对参与行为的影响。</p>
+<div class="formula">个人层：Y_ij = β0j + β1j X_ij + r_ij<br>社区层：β1j = γ10 + γ11 W_j + u1j<br>γ11 就是跨层互动效应</div>
+<p>如果 γ11 显著，说明个人层关系受到上层环境调节。它回答的不是“社区是否直接影响个人”，而是“社区环境是否改变个人特征的作用方式”。</p>
+</section>
+
+<section id="center">
+<h2>七、中心化：比较的是“组内差异”还是“组间差异”</h2>
+<p>HLM 中经常要处理中心化。中心化不是纯技术操作，而是决定系数含义。总均值中心化是把变量减去总体平均值，组均值中心化是把变量减去本组平均值。</p>
+<table>
+<tr><th>中心化方式</th><th>含义</th><th>适用理解</th></tr>
+<tr><td>不中心化</td><td>保留原始尺度</td><td>截距有时难解释，跨层解释可能混杂</td></tr>
+<tr><td>总均值中心化</td><td>和总体平均水平比较</td><td>适合解释整体偏离平均水平的作用</td></tr>
+<tr><td>组均值中心化</td><td>和本组平均水平比较</td><td>适合识别组内效应，区分组内和组间差异</td></tr>
+</table>
+<p>比如研究个人收入对参与的影响，组均值中心化后，收入系数表示“在同一个社区内，比本社区平均收入更高的人是否更愿意参与”。这和“富裕社区整体参与更高”不是同一个问题。</p>
+</section>
+
+<section id="demo">
+<h2>八、互动演示：ICC、随机截距和随机斜率</h2>
+<div class="tabs"><button class="tab active" data-tab="iccPanel">ICC 计算</button><button class="tab" data-tab="linePanel">随机截距/斜率</button></div>
+
+<div class="panel active" id="iccPanel">
+<p>调整组间方差和组内方差。ICC 越高，说明差异越多来自组与组之间，越有必要考虑多层模型。</p>
+<div class="controls">
+<div><label>组间方差 <span class="value" id="betweenVal">20</span></label><input id="between" type="range" min="0" max="100" value="20"></div>
+<div><label>组内方差 <span class="value" id="withinVal">80</span></label><input id="within" type="range" min="1" max="100" value="80"></div>
+<div><label>上层环境重要性 <span class="value" id="levelVal">较低</span></label><input id="dummy" type="range" min="0" max="1" value="0" disabled></div>
+</div>
+<canvas id="iccCanvas" width="900" height="350"></canvas>
+<div class="output"><div class="metric"><span>ICC</span><strong id="iccOut">0.20</strong></div><div class="metric"><span>组间占比</span><strong id="betweenPct">20%</strong></div><div class="metric"><span>组内占比</span><strong id="withinPct">80%</strong></div></div>
+</div>
+
+<div class="panel" id="linePanel">
+<p>随机截距表示不同组有不同起点，随机斜率表示 X 的影响在不同组中不同。调整两个参数，观察三条组别线如何变化。</p>
+<div class="controls">
+<div><label>截距差异 <span class="value" id="intVal">12</span></label><input id="intDiff" type="range" min="0" max="30" value="12"></div>
+<div><label>斜率差异 <span class="value" id="slopeVal">0.60</span></label><input id="slopeDiff" type="range" min="0" max="1.5" step="0.1" value="0.6"></div>
+<div><label>平均斜率 <span class="value" id="baseSlopeVal">1.00</span></label><input id="baseSlope" type="range" min="-1" max="3" step="0.1" value="1.0"></div>
+</div>
+<canvas id="lineCanvas" width="900" height="350"></canvas>
+</div>
+</section>
+
+<section id="workflow">
+<h2>九、HLM 研究通常怎么做</h2>
+<div class="grid3">
+<div class="card soft"><span class="tag">第一步</span><h3>确认层级结构</h3><p>说明样本如何嵌套，比如居民—社区、学生—学校、企业—城市。</p></div>
+<div class="card soft2"><span class="tag">第二步</span><h3>估计空模型和 ICC</h3><p>先判断结果变量有多少差异来自上层单位，是否有必要使用多层模型。</p></div>
+<div class="card soft3"><span class="tag">第三步</span><h3>逐步加入变量</h3><p>先加个人层变量，再加上层变量，最后考虑随机斜率和跨层互动。</p></div>
+</div>
+<p>论文写作中，最好说明为什么普通回归不够，为什么数据具有嵌套结构，以及每一层变量对应什么理论含义。</p>
+</section>
+
+<section id="pitfalls">
+<h2>十、常见误区：HLM 不是把变量分层摆放就结束</h2>
+<div class="grid">
+<div class="card"><h3>误区一：没有嵌套结构也使用 HLM</h3><p>HLM 适合层级数据。如果样本没有清楚的上层单位，使用多层模型就缺少依据。</p></div>
+<div class="card"><h3>误区二：只看显著性，不看 ICC</h3><p>ICC 是理解层级结构的重要起点。它告诉我们上层单位是否真的解释了结果差异。</p></div>
+<div class="card"><h3>误区三：随机斜率随便加</h3><p>随机斜率需要理论理由，也需要足够的上层单位数量，否则模型可能不稳定。</p></div>
+<div class="card"><h3>误区四：中心化含义不清</h3><p>不同中心化方式会改变系数解释。尤其在跨层互动中，中心化必须与研究问题一致。</p></div>
+</div>
+</section>
+
+<section id="quiz">
+<h2>十一、自测</h2>
+<div class="qa"><strong>问题 1：</strong>居民嵌套在社区中，为什么不能简单把所有居民当作完全独立样本？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">因为同一社区居民共享社区环境，彼此更相似。忽略这种相关性会低估标准误，也会遗漏社区层影响。</div></div>
+<div class="qa"><strong>问题 2：</strong>ICC=0.25 表示什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">表示结果变量约 25% 的差异来自组间差异，说明上层单位具有重要影响。</div></div>
+<div class="qa"><strong>问题 3：</strong>“社区组织密度增强政治兴趣对参与的影响”属于什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">这是跨层互动。社区层变量调节了个人层变量对结果的影响。</div></div>
+</section>
+</main>
+<div class="footer">一句话记住：HLM 把个体放回它所属的组织、社区和地区中，既看个人差异，也看环境差异。</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+document.querySelectorAll(".tab").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(b){b.classList.remove("active")});document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active")});btn.classList.add("active");$(btn.dataset.tab).classList.add("active");drawICC();drawLines()})})
+function toggleAnswer(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block"}
+function fmt(x){return (Math.round(x*100)/100).toFixed(2)}
+function drawICC(){var b=+$("between").value,w=+$("within").value;var total=b+w;var icc=b/total;$("betweenVal").textContent=b;$("withinVal").textContent=w;$("iccOut").textContent=fmt(icc);$("betweenPct").textContent=Math.round(icc*100)+"%";$("withinPct").textContent=Math.round((1-icc)*100)+"%";$("levelVal").textContent=icc>=.25?"较高":(icc>=.1?"中等":"较低");var c=$("iccCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,350);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,350);var x=170,y=90,width=560,height=80;ctx.fillStyle="#2f6f5e";ctx.fillRect(x,y,width*icc,height);ctx.fillStyle="#7b4b9a";ctx.fillRect(x+width*icc,y,width*(1-icc),height);ctx.strokeStyle="#ddd6c7";ctx.strokeRect(x,y,width,height);ctx.fillStyle="#202124";ctx.font="bold 18px sans-serif";ctx.textAlign="center";ctx.fillText("总差异 = 组间差异 + 组内差异",450,55);ctx.fillStyle="#2f6f5e";ctx.fillText("组间差异 "+Math.round(icc*100)+"%",x+width*icc/2,y+48);ctx.fillStyle="#fff";if(icc<.18){ctx.fillStyle="#202124"}ctx.fillText("",0,0);ctx.fillStyle="#7b4b9a";ctx.fillText("组内差异 "+Math.round((1-icc)*100)+"%",x+width*icc+width*(1-icc)/2,y+48);ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.fillText("ICC 越高，说明同一组内部越相似，上层环境越不能被忽略。",450,230)}
+function drawLines(){var id=+$("intDiff").value,sd=+$("slopeDiff").value,bs=+$("baseSlope").value;$("intVal").textContent=id;$("slopeVal").textContent=sd.toFixed(2);$("baseSlopeVal").textContent=bs.toFixed(2);var c=$("lineCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,900,350);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,350);var left=80,right=790,top=45,bottom=285;ctx.strokeStyle="#ddd6c7";ctx.lineWidth=1;for(var i=0;i<=5;i++){var yy=top+i*(bottom-top)/5;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(right,yy);ctx.stroke()}ctx.strokeStyle="#202124";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(left,bottom);ctx.lineTo(right,bottom);ctx.stroke();ctx.beginPath();ctx.moveTo(left,bottom);ctx.lineTo(left,top);ctx.stroke();function mx(x){return left+(x/10)*(right-left)}function my(v){return bottom-((v+35)/100)*(bottom-top)}function line(inter,slope,color,label){ctx.strokeStyle=color;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(mx(0),my(inter));ctx.lineTo(mx(10),my(inter+slope*10));ctx.stroke();ctx.fillStyle=color;ctx.font="bold 15px sans-serif";ctx.textAlign="left";ctx.fillText(label,mx(10)+8,my(inter+slope*10)+5)}line(20-id/2,bs-sd,"#b56a2b","组 A");line(20,bs,"#2f6f5e","组 B");line(20+id/2,bs+sd,"#7b4b9a","组 C");ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("截距差异 = 起点不同；斜率差异 = X 的作用在不同组中不同。",450,325)}
+["between","within"].forEach(function(id){$(id).addEventListener("input",drawICC)})
+["intDiff","slopeDiff","baseSlope"].forEach(function(id){$(id).addEventListener("input",drawLines)})
+drawICC();drawLines()
+</script>
+</body>
+</html>

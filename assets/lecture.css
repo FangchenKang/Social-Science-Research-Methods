@@ -1,0 +1,7 @@
+/* Only used by existing lecture pages; selectors are intentionally namespaced. */
+.site-home-link { position: fixed; z-index: 9999; top: 14px; left: 14px; display: inline-flex; align-items: center; gap: .4rem; padding: .55rem .75rem; color: #fff !important; background: #173e61 !important; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; box-shadow: 0 5px 16px rgba(12,36,57,.22); font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; font-size: 13px; font-weight: 700; line-height: 1; text-decoration: none !important; }
+.site-home-link:hover { color: #fff !important; background: #0d2e4c !important; transform: translateY(-1px); }
+.academic-context { max-width: 980px; margin: 32px auto; padding: 22px 25px; color: #26394a; background: linear-gradient(135deg, #f0f7f6, #f8fbfc); border: 1px solid #cbdedd; border-left: 5px solid #207a76; border-radius: 8px; box-shadow: 0 6px 18px rgba(21,61,83,.08); font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; line-height: 1.8; }
+.academic-context h2 { margin: 0 0 .7rem; color: #164866; font-size: 1.2rem; line-height: 1.35; }
+.academic-context p { margin: 0; font-size: .96rem; }
+@media (max-width: 680px) { .site-home-link { top: 8px; left: 8px; font-size: 12px; } .academic-context { margin: 24px 14px; padding: 18px; } }

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="社会科学研究方法互动式学习导航：从统计底座到复杂方法的系统学习地图。">
+  <title>社会科学研究方法导航</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body class="index-page">
+  <a class="skip-link" href="#methods">跳至方法目录</a>
+  <header class="hero" id="top">
+    <nav class="topbar" aria-label="主导航">
+      <a class="brand" href="index.html">SSRM <span>研究方法导航</span></a>
+      <div class="nav-links"><a href="#paths">学习路径</a><a href="#methods">方法目录</a><a href="#map">知识地图</a></div>
+    </nav>
+    <div class="hero-content">
+      <p class="eyebrow">Social Science Research Methods</p>
+      <h1>社会科学研究方法导航</h1>
+      <p class="lede">从统计底座、因果推断、实验设计、质性方法到复杂方法的系统学习地图。</p>
+      <p class="hero-note">这是一个面向政治学、公共管理与社会科学研究的互动式方法学习网站。每份讲义围绕方法原理、学术脉络、适用场景、操作逻辑与常见误区展开。</p>
+      <div class="hero-actions"><a class="button button-primary" href="#paths">选择学习路径</a><a class="button button-quiet" href="#methods">浏览全部方法</a></div>
+    </div>
+    <div class="hero-stat" aria-label="内容概览"><strong>21</strong><span>份互动讲义</span><strong>5</strong><span>条学习路径</span></div>
+  </header>
+
+  <main>
+    <section class="section paths-section" id="paths" aria-labelledby="paths-title">
+      <div class="section-heading"><p class="eyebrow">Recommended routes</p><h2 id="paths-title">按问题推进，而非按术语堆叠</h2><p>可从第一条路径建立底座，也可按当前研究问题直接进入相应方法。</p></div>
+      <div class="path-grid">
+        <article class="path-card"><span class="path-number">01</span><h3>统计与回归底座</h3><p>先建立描述、推断与模型比较的共同语言。</p><ol><li><a href="statistics_regression_foundation_fixed.html">统计与回归底座</a></li><li><a href="fixed_effects_intro.html">固定效应</a></li><li><a href="mediation_moderation_intro.html">中介与调节</a></li><li><a href="sem_intro.html">SEM</a></li><li><a href="hlm_intro.html">HLM</a></li></ol></article>
+        <article class="path-card"><span class="path-number">02</span><h3>现代因果推断</h3><p>从反事实出发，为政策与制度问题建立识别策略。</p><ol><li><a href="causality_mechanism_intro.html">因果关系与机制</a></li><li><a href="did_intro.html">DID</a></li><li><a href="event_study_intro.html">事件研究</a></li><li><a href="rdd_intro.html">RDD</a></li><li><a href="iv_intro.html">IV</a></li><li><a href="psm_intro.html">PSM</a></li><li><a href="scm_intro.html">SCM</a></li><li><a href="double_machine_learning_intro.html">双重机器学习</a></li></ol></article>
+        <article class="path-card"><span class="path-number">03</span><h3>实验与调查设计</h3><p>用随机化与结构化选择任务识别态度和行为机制。</p><ol><li><a href="survey_conjoint_intro.html">调查实验与联合实验</a></li><li><a href="mediation_moderation_intro.html">中介与调节</a></li></ol></article>
+        <article class="path-card"><span class="path-number">04</span><h3>质性方法与方法论</h3><p>回到案例内部，处理组态因果、机制和推断逻辑。</p><ol><li><a href="kkv_debate_ontology_revised.html">KKV 之争</a></li><li><a href="case_study_process_tracing_intro.html">案例研究与过程追踪</a></li><li><a href="QCA.html">QCA</a></li></ol></article>
+        <article class="path-card"><span class="path-number">05</span><h3>文本、空间、网络与复杂方法</h3><p>将非结构化资料、关联结构与高维问题纳入研究设计。</p><ol><li><a href="text_analysis_causal_inference_intro.html">文本分析</a></li><li><a href="spatial_econometrics_intro.html">空间计量</a></li><li><a href="social_network_analysis_intro.html">社会网络分析</a></li><li><a href="bayesian_inference_intro_fixed.html">贝叶斯推断</a></li></ol></article>
+      </div>
+    </section>
+
+    <section class="section methods-section" id="methods" aria-labelledby="methods-title">
+      <div class="section-heading"><p class="eyebrow">Method library</p><h2 id="methods-title">方法讲义目录</h2><p>输入关键词，或按方法类型与学习难度缩小范围。</p></div>
+      <div class="filter-panel" aria-label="筛选方法">
+        <label class="search-field"><span class="sr-only">搜索方法</span><input id="method-search" type="search" placeholder="搜索方法名称、简介或类别" autocomplete="off"></label>
+        <div class="filter-group" aria-label="按类别筛选"><button class="filter is-active" type="button" data-category="all">全部</button><button class="filter" type="button" data-category="统计基础">统计基础</button><button class="filter" type="button" data-category="因果推断">因果推断</button><button class="filter" type="button" data-category="实验设计">实验设计</button><button class="filter" type="button" data-category="质性方法">质性方法</button><button class="filter" type="button" data-category="文本空间网络">文本·空间·网络</button><button class="filter" type="button" data-category="方法论">方法论</button></div>
+        <div class="filter-group difficulty-filters" aria-label="按难度筛选"><span>难度</span><button class="filter is-active" type="button" data-difficulty="all">全部</button><button class="filter" type="button" data-difficulty="基础">基础</button><button class="filter" type="button" data-difficulty="进阶">进阶</button><button class="filter" type="button" data-difficulty="高阶">高阶</button></div>
+      </div>
+      <p class="result-count" id="result-count" aria-live="polite">显示 21 种方法</p>
+      <div class="method-grid">
+        <article class="method-card" data-category="统计基础" data-difficulty="基础" data-search="统计 回归 foundation 抽样 推断 假设检验 置信区间"><div><span class="tag category">统计基础</span><span class="tag basic">基础</span></div><h3>统计与回归底座</h3><p class="english">Statistics &amp; Regression Foundation</p><p>掌握抽样、推断、假设检验、置信区间和基础回归。</p><p class="question"><b>适用问题：</b>如何可靠地描述数据并建立最基础的变量关系模型？</p><a class="card-link" href="statistics_regression_foundation_fixed.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="统计基础" data-difficulty="进阶" data-search="固定效应 FE fixed effects 面板数据 不可观测异质性"><div><span class="tag category">统计基础</span><span class="tag intermediate">进阶</span></div><h3>固定效应</h3><p class="english">Fixed Effects (FE)</p><p>控制不随时间变化的不可观测差异，让比较回到单位自身的变化。</p><p class="question"><b>适用问题：</b>如何在面板数据中削弱稳定个体差异造成的偏误？</p><a class="card-link" href="fixed_effects_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="统计基础" data-difficulty="进阶" data-search="中介 调节 mediation moderation 机制 交互项"><div><span class="tag category">统计基础</span><span class="tag intermediate">进阶</span></div><h3>中介与调节</h3><p class="english">Mediation &amp; Moderation</p><p>分析因果作用如何发生，以及何种条件下作用更强或更弱。</p><p class="question"><b>适用问题：</b>作用路径是什么？不同群体或情境是否存在异质性？</p><a class="card-link" href="mediation_moderation_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="统计基础" data-difficulty="高阶" data-search="SEM 结构方程 模型 潜变量 测量模型"><div><span class="tag category">统计基础</span><span class="tag advanced">高阶</span></div><h3>结构方程模型</h3><p class="english">Structural Equation Modeling (SEM)</p><p>同时处理潜变量的测量，以及变量之间的结构关系。</p><p class="question"><b>适用问题：</b>抽象概念如何测量，又如何彼此关联？</p><a class="card-link" href="sem_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="统计基础" data-difficulty="高阶" data-search="HLM 多层模型 分层 嵌套 hierarchical linear model"><div><span class="tag category">统计基础</span><span class="tag advanced">高阶</span></div><h3>多层模型</h3><p class="english">Hierarchical Linear Modeling (HLM)</p><p>处理个体嵌套在组织、社区、学校或地区中的多层数据。</p><p class="question"><b>适用问题：</b>个体差异与群体环境如何共同影响结果？</p><a class="card-link" href="hlm_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="基础" data-search="因果 机制 causality mechanism 反事实 DAG"><div><span class="tag category">因果推断</span><span class="tag basic">基础</span></div><h3>因果关系与机制</h3><p class="english">Causality &amp; Mechanisms</p><p>区分“是否导致”与“如何导致”，为研究设计确定问题坐标。</p><p class="question"><b>适用问题：</b>相关性、因果效应和机制证据分别意味着什么？</p><a class="card-link" href="causality_mechanism_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="进阶" data-search="DID 双重差分 difference in differences 政策评估 平行趋势"><div><span class="tag category">因果推断</span><span class="tag intermediate">进阶</span></div><h3>双重差分</h3><p class="english">Difference-in-Differences (DID)</p><p>通过处理组与控制组在政策前后的变化差异识别政策效果。</p><p class="question"><b>适用问题：</b>一项政策或冲击带来了怎样的净变化？</p><a class="card-link" href="did_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="进阶" data-search="事件研究 event study 动态效应 政策前趋势"><div><span class="tag category">因果推断</span><span class="tag intermediate">进阶</span></div><h3>事件研究</h3><p class="english">Event Study</p><p>观察政策前趋势和政策后动态效应，是 DID 的重要扩展。</p><p class="question"><b>适用问题：</b>政策效应何时出现、是否持续，以及平行趋势是否可信？</p><a class="card-link" href="event_study_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="进阶" data-search="RDD 断点回归 regression discontinuity 准实验 阈值"><div><span class="tag category">因果推断</span><span class="tag intermediate">进阶</span></div><h3>断点回归</h3><p class="english">Regression Discontinuity Design (RDD)</p><p>利用制度断点附近的准随机性识别局部因果效应。</p><p class="question"><b>适用问题：</b>跨过资格线、分数线或门槛的影响是什么？</p><a class="card-link" href="rdd_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="高阶" data-search="IV 工具变量 instrumental variables 内生性 外生工具"><div><span class="tag category">因果推断</span><span class="tag advanced">高阶</span></div><h3>工具变量</h3><p class="english">Instrumental Variables (IV)</p><p>借助外生工具变量处理内生性问题，寻找可信的因果变化。</p><p class="question"><b>适用问题：</b>当核心解释变量并不“干净”时，如何识别其效应？</p><a class="card-link" href="iv_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="进阶" data-search="PSM 倾向得分 匹配 propensity score matching 选择偏差"><div><span class="tag category">因果推断</span><span class="tag intermediate">进阶</span></div><h3>倾向得分匹配</h3><p class="english">Propensity Score Matching (PSM)</p><p>通过匹配相似个体减少可观测选择偏差。</p><p class="question"><b>适用问题：</b>观察性资料中能否找到更可比的处理组与对照组？</p><a class="card-link" href="psm_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="高阶" data-search="SCM 合成控制 synthetic control 单一处理单位"><div><span class="tag category">因果推断</span><span class="tag advanced">高阶</span></div><h3>合成控制法</h3><p class="english">Synthetic Control Method (SCM)</p><p>为处理单位构造一个加权组合的合成对照。</p><p class="question"><b>适用问题：</b>一个地区或少数处理单位受到政策影响后会怎样？</p><a class="card-link" href="scm_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="因果推断" data-difficulty="高阶" data-search="双重机器学习 DML double machine learning 高维控制 正交化"><div><span class="tag category">因果推断</span><span class="tag advanced">高阶</span></div><h3>双重机器学习</h3><p class="english">Double Machine Learning (DML)</p><p>用机器学习处理高维控制，并保护核心因果效应的估计。</p><p class="question"><b>适用问题：</b>控制变量复杂、维度很高时如何仍保持可解释的因果推断？</p><a class="card-link" href="double_machine_learning_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="实验设计" data-difficulty="进阶" data-search="调查实验 联合实验 conjoint survey experiment 随机化 选择"><div><span class="tag category">实验设计</span><span class="tag intermediate">进阶</span></div><h3>调查实验与联合实验</h3><p class="english">Survey &amp; Conjoint Experiments</p><p>通过随机化情境或属性组合识别公众态度与选择机制。</p><p class="question"><b>适用问题：</b>不同信息、框架或属性如何改变个体选择？</p><a class="card-link" href="survey_conjoint_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="质性方法" data-difficulty="高阶" data-search="QCA 定性比较分析 fuzzy set 组态因果 条件组合"><div><span class="tag category">质性方法</span><span class="tag advanced">高阶</span></div><h3>定性比较分析</h3><p class="english">Qualitative Comparative Analysis (QCA)</p><p>解释多个条件如何组合产生结果，适合中小样本与组态因果分析。</p><p class="question"><b>适用问题：</b>是否存在多条不同路径通向同一个结果？</p><a class="card-link" href="QCA.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="质性方法" data-difficulty="进阶" data-search="案例研究 过程追踪 case study process tracing 机制 证据"><div><span class="tag category">质性方法</span><span class="tag intermediate">进阶</span></div><h3>案例研究与过程追踪</h3><p class="english">Case Study &amp; Process Tracing</p><p>进入案例内部，寻找因果机制如何生成结果。</p><p class="question"><b>适用问题：</b>一个结果究竟是经由何种过程与证据链形成的？</p><a class="card-link" href="case_study_process_tracing_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="方法论" data-difficulty="进阶" data-search="KKV 争论 定性 定量 本体论 推断逻辑"><div><span class="tag category">方法论</span><span class="tag intermediate">进阶</span></div><h3>KKV 之争</h3><p class="english">KKV Debate &amp; Ontology</p><p>理解定量与定性方法背后的推断逻辑和本体论分歧。</p><p class="question"><b>适用问题：</b>不同研究传统对“证据”与“解释”有何不同理解？</p><a class="card-link" href="kkv_debate_ontology_revised.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="文本空间网络" data-difficulty="进阶" data-search="文本分析 text analysis 因果推断 计算文本 编码"><div><span class="tag category">文本·空间·网络</span><span class="tag intermediate">进阶</span></div><h3>文本分析与因果推断</h3><p class="english">Text Analysis &amp; Causal Inference</p><p>把文本资料转化为可分析的数据，用于描述、分类或机制识别。</p><p class="question"><b>适用问题：</b>语言资料如何成为变量、结果或机制证据？</p><a class="card-link" href="text_analysis_causal_inference_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="文本空间网络" data-difficulty="高阶" data-search="空间计量 spatial econometrics 空间依赖 溢出 自相关"><div><span class="tag category">文本·空间·网络</span><span class="tag advanced">高阶</span></div><h3>空间计量</h3><p class="english">Spatial Econometrics</p><p>分析空间邻近、空间依赖和空间溢出效应。</p><p class="question"><b>适用问题：</b>一个地区的结果是否会受相邻地区影响？</p><a class="card-link" href="spatial_econometrics_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="文本空间网络" data-difficulty="进阶" data-search="社会网络分析 SNA social network 关系 结构 弱关系"><div><span class="tag category">文本·空间·网络</span><span class="tag intermediate">进阶</span></div><h3>社会网络分析</h3><p class="english">Social Network Analysis (SNA)</p><p>从关系结构解释权力、资源、信息和协同。</p><p class="question"><b>适用问题：</b>谁连接谁，网络位置如何塑造行动与结果？</p><a class="card-link" href="social_network_analysis_intro.html">进入学习 <span>→</span></a></article>
+        <article class="method-card" data-category="文本空间网络" data-difficulty="进阶" data-search="贝叶斯 bayesian inference 先验 后验 MCMC"><div><span class="tag category">文本·空间·网络</span><span class="tag intermediate">进阶</span></div><h3>贝叶斯推断</h3><p class="english">Bayesian Inference</p><p>用先验和数据共同更新对假设或参数的判断。</p><p class="question"><b>适用问题：</b>如何把已有知识与新证据放进同一推断框架？</p><a class="card-link" href="bayesian_inference_intro_fixed.html">进入学习 <span>→</span></a></article>
+      </div>
+      <p class="empty-state" id="empty-state" hidden>没有找到匹配的方法。试试更短的关键词，或清除筛选条件。</p>
+    </section>
+
+    <section class="section map-section" id="map" aria-labelledby="map-title">
+      <div class="section-heading"><p class="eyebrow">Knowledge map</p><h2 id="map-title">方法知识地图</h2><p>研究并非总是线性前进；这张图呈现一条可回溯、可分岔的主线。</p></div>
+      <div class="knowledge-map" role="list" aria-label="社会科学研究流程">
+        <div class="map-node" role="listitem"><span>01</span>研究问题</div><i>→</i><div class="map-node" role="listitem"><span>02</span>概念与测量</div><i>→</i><div class="map-node" role="listitem"><span>03</span>数据与抽样</div><i>→</i><div class="map-node" role="listitem"><span>04</span>描述统计</div><i>→</i><div class="map-node" role="listitem"><span>05</span>回归模型</div><i>→</i><div class="map-node emphasis" role="listitem"><span>06</span>因果识别</div><i>→</i><div class="map-node" role="listitem"><span>07</span>机制解释</div><i>→</i><div class="map-node" role="listitem"><span>08</span>质性深化</div><i>→</i><div class="map-node" role="listitem"><span>09</span>复杂方法扩展</div>
+      </div>
+    </section>
+  </main>
+  <footer><p>本项目用于社会科学研究方法学习与教学展示。</p><p>Maintained by Fangchen Kang. · <a href="https://github.com/FangchenKang/Social-Science-Research-Methods">GitHub: Social-Science-Research-Methods</a></p><a class="back-top" href="#top">返回顶部 ↑</a></footer>
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>固定效应模型：背后的原理</title>
+<style>
+  :root{
+    --bg:#f6f4ef;
+    --card:#ffffff;
+    --ink:#202124;
+    --muted:#5f6368;
+    --line:#ddd6c7;
+    --accent:#2f6f5e;
+    --accent2:#7b4b9a;
+    --accent3:#b56a2b;
+    --soft:#e8f1ec;
+    --soft2:#efe7f5;
+    --soft3:#f5eadf;
+    --shadow:0 18px 45px rgba(70,55,35,.10);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+    background:
+      radial-gradient(circle at top left, #e7efe9 0, rgba(231,239,233,0) 34%),
+      radial-gradient(circle at bottom right, #f1e4d4 0, rgba(241,228,212,0) 34%),
+      var(--bg);
+    color:var(--ink);
+    line-height:1.75;
+  }
+  header{
+    padding:58px 22px 34px;
+    text-align:center;
+  }
+  .eyebrow{
+    display:inline-block;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--accent);
+    background:rgba(255,255,255,.72);
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.08em;
+  }
+  h1{
+    margin:18px auto 12px;
+    max-width:980px;
+    font-size:clamp(30px,5vw,54px);
+    line-height:1.14;
+    letter-spacing:-.04em;
+  }
+  .subtitle{
+    max-width:820px;
+    margin:0 auto;
+    color:var(--muted);
+    font-size:18px;
+  }
+  main{
+    width:min(1120px,92vw);
+    margin:0 auto 70px;
+  }
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    gap:10px;
+    overflow:auto;
+    padding:12px 0;
+    background:linear-gradient(to bottom, rgba(246,244,239,.98), rgba(246,244,239,.82));
+    backdrop-filter: blur(10px);
+  }
+  .nav a{
+    white-space:nowrap;
+    text-decoration:none;
+    color:var(--muted);
+    background:rgba(255,255,255,.78);
+    border:1px solid var(--line);
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:14px;
+  }
+  .nav a:hover{color:var(--accent);border-color:var(--accent)}
+  section{
+    margin:26px 0;
+    background:rgba(255,255,255,.84);
+    border:1px solid var(--line);
+    border-radius:28px;
+    box-shadow:var(--shadow);
+    padding:28px;
+  }
+  h2{
+    margin:0 0 14px;
+    font-size:28px;
+    line-height:1.25;
+    letter-spacing:-.03em;
+  }
+  h3{
+    margin:18px 0 8px;
+    font-size:20px;
+  }
+  p{margin:10px 0;color:#2c2d2f}
+  .lead{font-size:18px;color:#303336}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+    margin-top:18px;
+  }
+  .grid3{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+    margin-top:18px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:20px;
+  }
+  .soft{background:var(--soft)}
+  .soft2{background:var(--soft2)}
+  .soft3{background:var(--soft3)}
+  .tag{
+    display:inline-block;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px 10px;
+    color:var(--accent);
+    font-size:13px;
+    font-weight:800;
+  }
+  .formula{
+    margin:14px 0;
+    padding:16px 18px;
+    border-radius:18px;
+    background:#1f2933;
+    color:#fff;
+    font-family:"SFMono-Regular",Consolas,monospace;
+    overflow:auto;
+  }
+  .big-quote{
+    margin-top:18px;
+    padding:22px;
+    border-left:6px solid var(--accent);
+    background:var(--soft);
+    border-radius:18px;
+    font-size:20px;
+    font-weight:760;
+    color:#22342e;
+  }
+  .diagram{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:18px 0;
+  }
+  .node{
+    min-width:118px;
+    text-align:center;
+    padding:14px 16px;
+    border-radius:20px;
+    background:#fff;
+    border:2px solid var(--accent);
+    font-weight:800;
+    box-shadow:0 8px 20px rgba(47,111,94,.12);
+  }
+  .arrow{
+    position:relative;
+    min-width:80px;
+    height:3px;
+    background:var(--accent);
+  }
+  .arrow:after{
+    content:"";
+    position:absolute;
+    right:-2px;
+    top:-5px;
+    border-left:12px solid var(--accent);
+    border-top:7px solid transparent;
+    border-bottom:7px solid transparent;
+  }
+  table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    overflow:hidden;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:#fff;
+    margin-top:14px;
+  }
+  th,td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    text-align:left;
+  }
+  th{background:#f2eee6;color:#333}
+  tr:last-child td{border-bottom:0}
+  .tabs{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:12px 0 18px;
+  }
+  .tab{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:999px;
+    padding:8px 14px;
+    cursor:pointer;
+    color:var(--muted);
+    font-weight:750;
+  }
+  .tab.active{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+  }
+  .panel{display:none}
+  .panel.active{display:block}
+  .controls{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+    margin:16px 0;
+  }
+  label{display:block;font-weight:750;color:#333}
+  input[type="range"]{width:100%}
+  .value{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    color:var(--accent);
+    font-weight:850;
+  }
+  .output{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin-top:14px;
+  }
+  .metric{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    text-align:center;
+  }
+  .metric strong{
+    display:block;
+    font-size:24px;
+    color:var(--accent);
+  }
+  canvas{
+    width:100%;
+    max-width:100%;
+    height:330px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:20px;
+  }
+  .qa{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:18px;
+    padding:16px;
+    margin:12px 0;
+  }
+  .qa button{
+    margin-top:8px;
+    border:0;
+    background:var(--accent);
+    color:#fff;
+    border-radius:999px;
+    padding:8px 12px;
+    cursor:pointer;
+  }
+  .answer{
+    display:none;
+    margin-top:10px;
+    color:#31443d;
+    background:var(--soft);
+    border-radius:14px;
+    padding:12px;
+  }
+  .footer{
+    text-align:center;
+    color:var(--muted);
+    padding:28px 0 54px;
+  }
+  @media(max-width:820px){
+    .grid,.grid3,.controls,.output{grid-template-columns:1fr}
+    section{padding:22px;border-radius:22px}
+    .arrow{transform:rotate(90deg); margin:20px}
+  }
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+  <span class="eyebrow">METHOD NOTE</span>
+  <h1>固定效应模型：把“不变的差异”从因果比较中扣掉</h1>
+  <p class="subtitle">固定效应模型的核心不是多加几个虚拟变量，而是在面板数据中用“自己和自己比”，控制那些看不见但长期不变的差异。</p>
+</header>
+
+<main>
+  <nav class="nav">
+    <a href="#intuition">核心直觉</a>
+    <a href="#problem">为什么需要</a>
+    <a href="#individual">个体固定效应</a>
+    <a href="#time">时间固定效应</a>
+    <a href="#twoway">双向固定效应</a>
+    <a href="#within">组内变换</a>
+    <a href="#interactive">互动演示</a>
+    <a href="#writing">论文写法</a>
+    <a href="#pitfalls">常见误区</a>
+    <a href="#quiz">自测</a>
+  </nav>
+
+  <section id="intuition">
+    <h2>一、核心直觉：同一个对象在不同时点的变化，更适合用来识别影响</h2>
+    <p class="lead">固定效应模型处理的是面板数据中的可比性问题。很多单位本来就不同，比如城市有长期发展基础差异，学校有历史声誉差异，个人有能力差异，企业有管理文化差异。如果这些差异既影响解释变量 X，也影响结果变量 Y，普通回归就会把“本来就不同”误当成“X 的影响”。</p>
+    <div class="big-quote">固定效应的底层想法是：不要简单拿 A 和 B 比，而是更多利用 A 自己随时间的变化来解释 A 自己结果的变化。</div>
+    <div class="grid">
+      <div class="card soft">
+        <span class="tag">普通比较的问题</span>
+        <h3>不同单位之间本来就不一样</h3>
+        <p>数字治理水平高的城市，可能本来财政能力强、干部能力高、产业基础好。这些长期差异也会提高治理绩效，所以直接比较高数字治理城市和低数字治理城市，容易高估数字治理的作用。</p>
+      </div>
+      <div class="card soft2">
+        <span class="tag">固定效应的办法</span>
+        <h3>把不随时间变化的差异扣掉</h3>
+        <p>如果一个城市的地理位置、历史基础、长期行政传统在研究期内基本不变，固定效应就可以把这些稳定差异吸收掉。剩下的识别主要来自同一城市内部随时间发生的变化。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem">
+    <h2>二、为什么需要固定效应：遗漏变量如果长期不变，就可以被吸收</h2>
+    <p>固定效应模型最常见的应用场景，是存在不可观测但相对稳定的遗漏变量。比如研究财政透明度对公众信任的影响，地方政治文化可能同时影响透明度和信任，但政治文化很难准确测量。如果政治文化在研究期内变化不大，地区固定效应就能控制它。</p>
+    <div class="formula">普通模型：Y_it = βX_it + u_i + ε_it<br>问题：u_i 是看不见的单位特质，如果它和 X_it 相关，β 会有偏。</div>
+    <p>这里的 u_i 可以理解为每个单位长期不变的特质。它可能是城市历史基础、个人能力、企业文化、学校声誉、地区治理传统。固定效应模型把 u_i 单独拿出来控制，从而避免它污染 X 对 Y 的估计。</p>
+  </section>
+
+  <section id="individual">
+    <h2>三、个体固定效应：控制每个单位不随时间变化的特质</h2>
+    <p>个体固定效应的目标，是控制每个研究对象自身长期稳定的差异。这里的“个体”不一定是人，也可以是城市、省份、学校、企业、社区或国家。只要同一个单位被反复观察，就可以考虑个体固定效应。</p>
+    <div class="formula">Y_it = βX_it + α_i + ε_it</div>
+    <p>α_i 就是个体固定效应。它给每个单位一个自己的截距，相当于允许每个城市、每个企业、每个人有自己的基础水平。这样，模型不再要求所有单位从同一个起点出发，而是让每个单位带着自己的长期特质进入比较。</p>
+    <table>
+      <tr><th>可以被个体固定效应控制的因素</th><th>为什么</th></tr>
+      <tr><td>地理位置、历史基础、长期文化</td><td>这些特征在短期内基本不变</td></tr>
+      <tr><td>个人天赋、家庭出身、早期教育背景</td><td>如果研究对象是个人，这些因素通常稳定</td></tr>
+      <tr><td>企业长期管理风格、学校声誉</td><td>研究期内变化较慢，可被单位固定效应吸收</td></tr>
+    </table>
+  </section>
+
+  <section id="time">
+    <h2>四、时间固定效应：控制所有单位共同经历的时间冲击</h2>
+    <p>时间固定效应用来控制某一年或某一时期所有单位共同受到的影响。比如宏观经济波动、全国性政策调整、疫情冲击、技术扩散、统一考核变化。这些冲击会同时影响很多单位，如果不控制，可能被误认为 X 的作用。</p>
+    <div class="formula">Y_it = βX_it + λ_t + ε_it</div>
+    <p>λ_t 就是时间固定效应。它给每一年或每一期一个共同截距，相当于允许所有单位在某一年一起上升或一起下降。这样，模型可以把宏观时间趋势和共同冲击扣掉。</p>
+  </section>
+
+  <section id="twoway">
+    <h2>五、双向固定效应：同时控制单位差异和时间冲击</h2>
+    <p>双向固定效应模型是政策评估中最常见的形式。它同时加入个体固定效应和时间固定效应，既控制单位长期不变的差异，也控制所有单位共同经历的时间变化。</p>
+    <div class="formula">Y_it = βX_it + α_i + λ_t + ε_it</div>
+    <p>这个模型中的 β 来自哪里？它不是来自城市之间的简单横向差异，也不是来自所有年份共同上升下降的趋势，而是来自同一单位内部、扣除共同时间冲击之后，X 的变化与 Y 的变化之间的关系。</p>
+    <div class="diagram">
+      <div class="node">原始差异</div>
+      <div class="arrow"></div>
+      <div class="node">扣除 α_i<br><small>单位固定差异</small></div>
+      <div class="arrow"></div>
+      <div class="node">扣除 λ_t<br><small>共同时间冲击</small></div>
+      <div class="arrow"></div>
+      <div class="node">识别 β</div>
+    </div>
+  </section>
+
+  <section id="within">
+    <h2>六、组内变换：固定效应其实是在看“偏离自身平均值的变化”</h2>
+    <p>固定效应模型背后的数学直觉，是把每个单位自己的平均水平减掉。这样，那些对该单位而言长期不变的特质就消失了。模型比较的不是城市 A 和城市 B 谁更高，而是城市 A 在某一年是否高于自己的长期平均，以及这种偏离是否伴随结果变量的偏离。</p>
+    <div class="formula">Y_it - Ȳ_i = β(X_it - X̄_i) + (ε_it - ε̄_i)</div>
+    <p>这个式子说明，个体固定效应估计的 β 来自单位内部变化。比如一个城市的数字治理投入在某几年高于它自己的平均水平，治理绩效是否也高于它自己的平均水平。固定效应把“城市之间的长期差异”拿掉，保留“城市内部随时间变化”的信息。</p>
+    <div class="big-quote">固定效应不是让所有单位一样，而是让每个单位先和自己的长期平均比，再看变化之间是否同步。</div>
+  </section>
+
+  <section id="interactive">
+    <h2>七、互动演示：固定效应如何扣掉“本来就高”的差异</h2>
+    <div class="tabs">
+      <button class="tab active" data-tab="levelPanel">横向比较</button>
+      <button class="tab" data-tab="withinPanel">组内变化</button>
+    </div>
+
+    <div id="levelPanel" class="panel active">
+      <p>横向比较容易把单位本来差异误认为 X 的影响。调整三个城市的固定基础，可以看到即使政策投入相同，不同城市的结果水平也可能长期不同。</p>
+      <div class="controls">
+        <div>
+          <label>A 市固定基础 <span class="value" id="aBaseVal">20</span></label>
+          <input id="aBase" type="range" min="0" max="40" value="20">
+        </div>
+        <div>
+          <label>B 市固定基础 <span class="value" id="bBaseVal">35</span></label>
+          <input id="bBase" type="range" min="0" max="40" value="35">
+        </div>
+        <div>
+          <label>C 市固定基础 <span class="value" id="cBaseVal">10</span></label>
+          <input id="cBase" type="range" min="0" max="40" value="10">
+        </div>
+      </div>
+      <canvas id="levelCanvas" width="900" height="330"></canvas>
+    </div>
+
+    <div id="withinPanel" class="panel">
+      <p>组内变化把每个城市自己的平均水平减掉，只看“高于或低于自身平均”的部分。固定基础被扣掉后，识别更依赖同一城市内部变化。</p>
+      <div class="controls">
+        <div>
+          <label>X 的真实影响 β <span class="value" id="betaVal">1.20</span></label>
+          <input id="betaRange" type="range" min="-1" max="3" step="0.1" value="1.2">
+        </div>
+        <div>
+          <label>共同时间冲击 <span class="value" id="shockVal">8</span></label>
+          <input id="shockRange" type="range" min="-10" max="20" step="1" value="8">
+        </div>
+        <div>
+          <label>随机扰动 <span class="value" id="noiseVal">3</span></label>
+          <input id="noiseRange" type="range" min="0" max="10" step="1" value="3">
+        </div>
+      </div>
+      <canvas id="withinCanvas" width="900" height="330"></canvas>
+      <div class="output">
+        <div class="metric"><span>控制的单位差异</span><strong>αᵢ</strong></div>
+        <div class="metric"><span>控制的时间冲击</span><strong>λₜ</strong></div>
+        <div class="metric"><span>留下的识别来源</span><strong>组内变化</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="writing">
+    <h2>八、论文中应该怎么写</h2>
+    <p>固定效应模型的写作应说明为什么存在不可观测但稳定的差异，以及为什么需要控制这些差异。比较好的表达是：为控制地区之间不随时间变化的异质性，模型加入地区固定效应；为控制所有地区共同经历的宏观时间冲击，模型加入年份固定效应。</p>
+    <div class="formula">Y_it = βX_it + γControls_it + α_i + λ_t + ε_it</div>
+    <p>报告结果时，要说明标准误如何处理。面板数据中，同一地区不同年份的误差项往往相关，因此常见做法是按地区聚类稳健标准误。若政策或处理在地区层面变化，通常也应按地区层面聚类。</p>
+  </section>
+
+  <section id="pitfalls">
+    <h2>九、常见误区：固定效应不是万能控制器</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>误区一：以为固定效应能控制一切</h3>
+        <p>固定效应只能控制不随时间变化的遗漏变量。那些随时间变化、同时影响 X 和 Y 的因素仍然可能造成偏误。</p>
+      </div>
+      <div class="card">
+        <h3>误区二：忽略变量缺乏组内变化</h3>
+        <p>如果一个变量在单位内部几乎不变化，固定效应模型就很难估计它的影响。完全不随时间变化的变量会被个体固定效应吸收掉。</p>
+      </div>
+      <div class="card">
+        <h3>误区三：把固定效应等同于因果识别</h3>
+        <p>固定效应改善了可比性，但不自动保证因果关系。仍要考虑反向因果、时间变化遗漏变量、选择性政策实施等问题。</p>
+      </div>
+      <div class="card">
+        <h3>误区四：标准误不聚类</h3>
+        <p>面板数据通常存在同一单位内的序列相关。若不做聚类稳健标准误，显著性可能被高估。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <h2>十、自测：固定效应到底控制了什么</h2>
+    <div class="qa">
+      <strong>问题 1：</strong>地区固定效应能否控制一个城市长期稳定的历史基础？
+      <br><button onclick="toggleAnswer(this)">查看答案</button>
+      <div class="answer">可以。只要历史基础在研究期内基本不变，地区固定效应就能吸收这类单位层面的稳定差异。</div>
+    </div>
+    <div class="qa">
+      <strong>问题 2：</strong>地区固定效应能否控制某一年全国共同发生的疫情冲击？
+      <br><button onclick="toggleAnswer(this)">查看答案</button>
+      <div class="answer">不能单独控制。全国共同时间冲击需要年份固定效应来控制。</div>
+    </div>
+    <div class="qa">
+      <strong>问题 3：</strong>如果一个解释变量在每个地区都不随时间变化，加入地区固定效应后还能估计它吗？
+      <br><button onclick="toggleAnswer(this)">查看答案</button>
+      <div class="answer">不能。完全不随时间变化的变量会被地区固定效应吸收，因为固定效应只利用单位内部随时间变化的信息。</div>
+    </div>
+  </section>
+</main>
+
+<div class="footer">一句话记住：固定效应模型用“自己和自己比”控制稳定差异，用时间固定效应扣除共同冲击，留下组内变化来识别关系。</div>
+
+<script>
+function $(id){return document.getElementById(id);}
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $(btn.dataset.tab).classList.add('active');
+    drawLevel(); drawWithin();
+  });
+});
+function toggleAnswer(btn){
+  const ans=btn.nextElementSibling;
+  ans.style.display=ans.style.display==="block"?"none":"block";
+}
+function drawAxes(ctx,left,top,right,bottom){
+  ctx.strokeStyle="#ddd6c7"; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y=top+i*(bottom-top)/5;
+    ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();
+  }
+  ctx.strokeStyle="#202124"; ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(left,bottom);ctx.lineTo(right,bottom);ctx.lineTo(right-8,bottom-5);ctx.moveTo(right,bottom);ctx.lineTo(right-8,bottom+5);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(left,bottom);ctx.lineTo(left,top);ctx.lineTo(left-5,top+8);ctx.moveTo(left,top);ctx.lineTo(left+5,top+8);ctx.stroke();
+}
+function drawLine(ctx,points,mapX,mapY,color,label){
+  ctx.strokeStyle=color;ctx.lineWidth=4;ctx.beginPath();
+  points.forEach((p,i)=>{if(i===0)ctx.moveTo(mapX(p.x),mapY(p.y));else ctx.lineTo(mapX(p.x),mapY(p.y));});
+  ctx.stroke();
+  ctx.fillStyle=color;ctx.font="bold 15px sans-serif";ctx.fillText(label,mapX(points[points.length-1].x)+8,mapY(points[points.length-1].y));
+}
+function drawLevel(){
+  const a=+($("aBase").value), b=+($("bBase").value), c=+($("cBase").value);
+  $("aBaseVal").textContent=a; $("bBaseVal").textContent=b; $("cBaseVal").textContent=c;
+  const canvas=$("levelCanvas"), ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,900,330); ctx.fillStyle="#fff"; ctx.fillRect(0,0,900,330);
+  const left=70, right=790, top=35, bottom=270;
+  drawAxes(ctx,left,top,right,bottom);
+  const t=[1,2,3,4,5];
+  const xs=[6,8,11,13,16];
+  const ptsA=t.map((x,i)=>({x,y:a+1.2*xs[i]+(i%2?1:-1)}));
+  const ptsB=t.map((x,i)=>({x,y:b+1.2*xs[i]+(i%2?-1:1)}));
+  const ptsC=t.map((x,i)=>({x,y:c+1.2*xs[i]+(i%2?0:2)}));
+  const all=[...ptsA,...ptsB,...ptsC].map(p=>p.y);
+  const minY=Math.min(...all)-8,maxY=Math.max(...all)+8;
+  const mapX=x=>left+(x-1)/(5-1)*(right-left);
+  const mapY=y=>bottom-(y-minY)/(maxY-minY)*(bottom-top);
+  drawLine(ctx,ptsA,mapX,mapY,"#2f6f5e","A 市");
+  drawLine(ctx,ptsB,mapX,mapY,"#7b4b9a","B 市");
+  drawLine(ctx,ptsC,mapX,mapY,"#b56a2b","C 市");
+  ctx.fillStyle="#5f6368";ctx.font="15px sans-serif";ctx.textAlign="center";
+  ctx.fillText("横向看，B 市可能长期更高；固定效应要扣掉这种“本来就高”的差异。",450,310);
+}
+function drawWithin(){
+  const beta=+($("betaRange").value), shock=+($("shockRange").value), noise=+($("noiseRange").value);
+  $("betaVal").textContent=beta.toFixed(1); $("shockVal").textContent=shock; $("noiseVal").textContent=noise;
+  const canvas=$("withinCanvas"), ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,900,330); ctx.fillStyle="#fff"; ctx.fillRect(0,0,900,330);
+  const left=70,right=790,top=35,bottom=270;
+  drawAxes(ctx,left,top,right,bottom);
+  const t=[1,2,3,4,5];
+  const xdev=[-2,-1,0,1,2];
+  const timeShock=[-4,0,shock,shock/2,shock/3];
+  const pts=t.map((x,i)=>({x, y: beta*xdev[i]+timeShock[i]*0.05 + (i%2?noise*0.06:-noise*0.04)}));
+  const minY=-4,maxY=4;
+  const mapX=x=>left+(x-1)/(5-1)*(right-left);
+  const mapY=y=>bottom-(y-minY)/(maxY-minY)*(bottom-top);
+  ctx.strokeStyle="#2f6f5e";ctx.lineWidth=4;ctx.beginPath();
+  pts.forEach((p,i)=>{if(i===0)ctx.moveTo(mapX(p.x),mapY(p.y));else ctx.lineTo(mapX(p.x),mapY(p.y));});
+  ctx.stroke();
+  pts.forEach(p=>{ctx.fillStyle="#2f6f5e";ctx.beginPath();ctx.arc(mapX(p.x),mapY(p.y),5,0,Math.PI*2);ctx.fill();});
+  ctx.fillStyle="#202124";ctx.font="15px sans-serif";ctx.textAlign="center";
+  ctx.fillText("这里画的是扣除单位平均后的偏离值：固定差异消失，只剩随时间变化的信息。",450,310);
+  ctx.fillStyle="#5f6368";ctx.font="13px sans-serif";
+  t.forEach(x=>ctx.fillText("t"+x,mapX(x),bottom+22));
+}
+["aBase","bBase","cBase"].forEach(id=>$(id).addEventListener("input",drawLevel));
+["betaRange","shockRange","noiseRange"].forEach(id=>$(id).addEventListener("input",drawWithin));
+drawLevel(); drawWithin();
+</script>
+</body>
+</html>

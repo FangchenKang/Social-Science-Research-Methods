@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>事件研究 Event Study：背后的原理</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#202124;--muted:#5f6368;--line:#ddd6c7;--green:#2f6f5e;--purple:#7b4b9a;--orange:#b56a2b;--soft:#e8f1ec;--soft2:#efe7f5;--soft3:#f5eadf}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,#e7efe9,transparent 35%),radial-gradient(circle at bottom right,#f1e4d4,transparent 35%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);line-height:1.75}
+header{text-align:center;padding:56px 22px 30px}.eyebrow{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--green);background:#ffffffc9;font-weight:700;font-size:13px;letter-spacing:.08em}
+h1{max-width:1000px;margin:18px auto 12px;font-size:clamp(30px,5vw,54px);line-height:1.14;letter-spacing:-.04em}.subtitle{max-width:850px;margin:0 auto;color:var(--muted);font-size:18px}
+main{width:min(1120px,92vw);margin:0 auto 70px}.nav{position:sticky;top:0;z-index:9;display:flex;gap:10px;overflow:auto;padding:12px 0;background:linear-gradient(to bottom,#f6f4effa,#f6f4efd0);backdrop-filter:blur(10px)}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--muted);background:#ffffffc9;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}.nav a:hover{color:var(--green);border-color:var(--green)}
+section{margin:26px 0;background:#ffffffd9;border:1px solid var(--line);border-radius:28px;box-shadow:0 18px 45px #4637231a;padding:28px}h2{margin:0 0 14px;font-size:28px;line-height:1.25;letter-spacing:-.03em}h3{margin:16px 0 8px;font-size:20px}p{margin:10px 0;color:#2c2d2f}.lead{font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px}.soft{background:var(--soft)}.soft2{background:var(--soft2)}.soft3{background:var(--soft3)}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green);font-size:13px;font-weight:800}.quote{margin-top:18px;padding:22px;border-left:6px solid var(--green);background:var(--soft);border-radius:18px;font-size:20px;font-weight:760;color:#22342e}
+.formula{margin:14px 0;padding:16px 18px;border-radius:18px;background:#1f2933;color:#fff;font-family:Consolas,"SFMono-Regular",monospace;overflow:auto}.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0}.node{min-width:120px;text-align:center;padding:14px 16px;border-radius:20px;background:#fff;border:2px solid var(--green);font-weight:800}.node.orange{border-color:var(--orange);color:var(--orange)}
+.arrow{position:relative;min-width:80px;height:3px;background:var(--green)}.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border-left:12px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff;margin-top:14px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f2eee6}tr:last-child td{border-bottom:0}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}label{display:block;font-weight:750}input[type=range]{width:100%}.value{font-family:Consolas,monospace;color:var(--green);font-weight:850}.output{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.metric{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.metric strong{display:block;font-size:24px;color:var(--green)}
+canvas{width:100%;height:370px;background:#fff;border:1px solid var(--line);border-radius:20px}.qa{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:12px 0}.qa button{margin-top:8px;border:0;background:var(--green);color:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}.answer{display:none;margin-top:10px;color:#31443d;background:var(--soft);border-radius:14px;padding:12px}
+.footer{text-align:center;color:var(--muted);padding:28px 0 54px}@media(max-width:820px){.grid,.grid3,.controls,.output{grid-template-columns:1fr}section{padding:22px;border-radius:22px}.arrow{transform:rotate(90deg);margin:20px}}
+</style>
+  <link rel="stylesheet" href="assets/lecture.css">
+  <script src="assets/main.js" defer></script>
+</head>
+<body>
+<header>
+<span class="eyebrow">METHOD NOTE</span>
+<h1>事件研究：把政策效应拆成“发生前、发生时、发生后”的动态路径</h1>
+<p class="subtitle">事件研究的核心不是多画一张图，而是围绕政策发生时点重排时间，检验政策前是否可比，并观察政策后效应如何变化。</p>
+</header>
+<main>
+<nav class="nav">
+<a href="#intuition">核心直觉</a><a href="#relative">相对时间</a><a href="#model">模型形式</a><a href="#pretrend">平行趋势</a><a href="#dynamic">动态效应</a><a href="#demo">互动演示</a><a href="#workflow">研究流程</a><a href="#pitfalls">常见误区</a><a href="#quiz">自测</a>
+</nav>
+
+<section id="intuition">
+<h2>一、核心直觉：不要只问“有没有效果”，还要问“效果什么时候出现”</h2>
+<p class="lead">事件研究，英文是 Event Study，常和 DID 放在一起使用。DID 通常给出一个平均政策效应，而事件研究把政策前后每一期的效应都估计出来。它既可以检验政策前处理组和对照组是否已有不同趋势，也可以观察政策实施后的效果是立即出现、逐步增强，还是短暂后消失。</p>
+<div class="quote">一句话记住：DID 看平均差异，事件研究看动态路径；政策前看可比性，政策后看效应演化。</div>
+<div class="grid">
+<div class="card soft"><span class="tag">政策前</span><h3>检验是否提前分化</h3><p>如果政策实施前，处理组相对于对照组已经明显上升或下降，就说明平行趋势可能不成立，后续政策效应解释会变弱。</p></div>
+<div class="card soft2"><span class="tag">政策后</span><h3>观察效应如何展开</h3><p>政策影响可能不是一次性出现，而是逐步积累、滞后发生、短期冲击后回落，事件研究可以展示这种过程。</p></div>
+</div>
+</section>
+
+<section id="relative">
+<h2>二、相对时间：把不同地区的政策发生点对齐</h2>
+<p>事件研究最重要的处理，是把日历时间转换为相对时间。政策发生那一年记为 0，政策前一年记为 -1，政策后一年记为 +1。这样，哪怕不同地区政策发生年份不同，也可以围绕各自的事件时点进行比较。</p>
+<div class="diagram"><div class="node">政策前<br>-3 -2 -1</div><div class="arrow"></div><div class="node orange">事件发生<br>0</div><div class="arrow"></div><div class="node">政策后<br>+1 +2 +3</div></div>
+<table>
+<tr><th>相对时间</th><th>含义</th><th>主要用途</th></tr>
+<tr><td>-3、-2</td><td>政策发生前几期</td><td>检验处理组是否提前变化</td></tr>
+<tr><td>-1</td><td>基准期</td><td>通常被省略，作为比较参照</td></tr>
+<tr><td>0</td><td>政策发生当期</td><td>观察即时冲击</td></tr>
+<tr><td>+1、+2、+3</td><td>政策发生后几期</td><td>观察动态效应和持续性</td></tr>
+</table>
+</section>
+
+<section id="model">
+<h2>三、模型形式：用一组相对时间虚拟变量替代一个政策变量</h2>
+<p>普通 DID 常用一个 Treat×Post 表示政策发生后的平均处理效应。事件研究则把政策发生前后每一期都变成相对时间虚拟变量，再分别估计每一期的系数。</p>
+<div class="formula">Y_it = α_i + λ_t + Σ_k β_k · 1[相对时间 = k] + ε_it<br>通常省略 k = -1，把政策前一期作为基准期。</div>
+<p>β_k 的含义是：在第 k 个相对时期，处理组相对于基准期和对照组的变化幅度。政策前的 β_k 应该接近 0，政策后的 β_k 则展示政策效应的动态变化。</p>
+</section>
+
+<section id="pretrend">
+<h2>四、政策前系数：事件研究首先是平行趋势检验</h2>
+<p>事件研究最重要的功能之一，是观察政策前处理组和对照组是否已经存在系统性差异。如果政策前的系数明显不为 0，或者呈现持续上升、下降趋势，就说明处理组在政策前已经和对照组走向不同。</p>
+<div class="grid">
+<div class="card soft"><span class="tag">理想情况</span><h3>政策前系数接近 0</h3><p>这说明处理组和对照组在政策前没有明显分化，平行趋势更有说服力。</p></div>
+<div class="card soft3"><span class="tag">危险信号</span><h3>政策前已有趋势</h3><p>如果政策前系数已经明显上升，政策后的上升就可能不是政策造成的，而是原有趋势延续。</p></div>
+</div>
+</section>
+
+<section id="dynamic">
+<h2>五、政策后系数：看政策效应是即时、滞后还是递增</h2>
+<p>事件研究的另一个价值，是展示政策效果的动态形态。制度改革可能有滞后效果，基础设施建设可能逐步增强，行政运动可能短期明显但很快衰减。</p>
+<div class="grid3">
+<div class="card"><span class="tag">即时效应</span><p>政策发生当期或下一期立即出现明显变化。</p></div>
+<div class="card"><span class="tag">滞后效应</span><p>政策实施后几期才逐渐出现影响。</p></div>
+<div class="card"><span class="tag">持续效应</span><p>政策影响出现后保持稳定或继续扩大。</p></div>
+</div>
+</section>
+
+<section id="demo">
+<h2>六、互动演示：政策前看趋势，政策后看效应</h2>
+<p>调整下面三个参数，观察事件研究图如何变化。政策前趋势越接近 0，政策后跳跃越清楚，因果解释越有说服力。</p>
+<div class="controls">
+<div><label>政策前趋势 <span class="value" id="preVal">0.00</span></label><input id="pre" type="range" min="-0.4" max="0.4" step="0.05" value="0"></div>
+<div><label>政策即时效应 <span class="value" id="jumpVal">0.80</span></label><input id="jump" type="range" min="-1" max="2" step="0.1" value="0.8"></div>
+<div><label>政策后递增速度 <span class="value" id="growVal">0.20</span></label><input id="grow" type="range" min="-0.4" max="0.6" step="0.05" value="0.2"></div>
+</div>
+<canvas id="eventCanvas" width="900" height="370"></canvas>
+<div class="output"><div class="metric"><span>政策前判断</span><strong id="preJudge">较好</strong></div><div class="metric"><span>政策后形态</span><strong id="postJudge">递增</strong></div><div class="metric"><span>基准期</span><strong>-1</strong></div></div>
+</section>
+
+<section id="workflow">
+<h2>七、事件研究通常怎么做</h2>
+<div class="grid3">
+<div class="card soft"><span class="tag">第一步</span><h3>确定事件时点</h3><p>明确每个处理单位什么时候受到政策、改革、冲击或事件影响。</p></div>
+<div class="card soft2"><span class="tag">第二步</span><h3>构造相对时间</h3><p>把事件发生时点设为 0，向前向后生成 lead 和 lag 变量。</p></div>
+<div class="card soft3"><span class="tag">第三步</span><h3>估计并画图</h3><p>省略一个基准期，估计每个相对时期系数，并用图展示置信区间。</p></div>
+</div>
+</section>
+
+<section id="pitfalls">
+<h2>八、常见误区：事件研究不是平行趋势的万能证明</h2>
+<div class="grid">
+<div class="card"><h3>误区一：只看政策后显著</h3><p>政策前系数同样重要。如果政策前已经显著变化，政策后系数再漂亮也要谨慎。</p></div>
+<div class="card"><h3>误区二：把“不显著”当作完全平行</h3><p>政策前不显著只能说明没有发现明显差异，不等于平行趋势一定成立。</p></div>
+<div class="card"><h3>误区三：忽略提前反应</h3><p>如果政策公布早于实施，处理组可能提前调整行为，导致政策前系数已经变化。</p></div>
+<div class="card"><h3>误区四：多期 DID 直接套传统 TWFE</h3><p>如果政策分批实施，传统双向固定效应事件研究可能产生偏误，需要考虑现代分期处理方法。</p></div>
+</div>
+</section>
+
+<section id="quiz">
+<h2>九、自测</h2>
+<div class="qa"><strong>问题 1：</strong>事件研究图中政策前系数明显上升，说明什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">说明处理组在政策前已经相对对照组发生变化，平行趋势可能不成立，政策效应解释要谨慎。</div></div>
+<div class="qa"><strong>问题 2：</strong>为什么通常省略相对时间 -1？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">因为需要选择一个基准期作为比较参照。常用政策前一期 -1 作为基准期，其他时期系数都相对于它解释。</div></div>
+<div class="qa"><strong>问题 3：</strong>事件研究和 DID 的关系是什么？<br><button onclick="toggleAnswer(this)">查看答案</button><div class="answer">事件研究可以理解为 DID 的动态扩展。DID 给出平均政策效应，事件研究展示政策前后每一期的动态效应。</div></div>
+</section>
+</main>
+<div class="footer">一句话记住：事件研究围绕政策发生时点重排时间，政策前检验可比性，政策后观察效应演化。</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+function toggleAnswer(btn){var ans=btn.nextElementSibling;ans.style.display=ans.style.display==="block"?"none":"block"}
+function fmt(x){return (Math.round(x*100)/100).toFixed(2)}
+function drawEvent(){
+  var pre=+$("pre").value,jump=+$("jump").value,grow=+$("grow").value;
+  $("preVal").textContent=fmt(pre);$("jumpVal").textContent=fmt(jump);$("growVal").textContent=fmt(grow);
+  $("preJudge").textContent=Math.abs(pre)<0.12?"较好":(Math.abs(pre)<0.25?"一般":"危险");
+  $("postJudge").textContent=grow>0.08?"递增":(grow<-0.08?"衰减":"稳定");
+  var ks=[-5,-4,-3,-2,-1,0,1,2,3,4,5];
+  var vals=ks.map(function(k){ if(k<0){return (k+1)*pre} return jump + k*grow });
+  vals[4]=0;
+  var c=$("eventCanvas"),ctx=c.getContext("2d");
+  ctx.clearRect(0,0,900,370);ctx.fillStyle="#fff";ctx.fillRect(0,0,900,370);
+  var left=75,right=820,top=35,bottom=285;
+  var min=Math.min(-1.2,...vals)-0.3,max=Math.max(2.3,...vals)+0.3;
+  function mx(k){return left+(k+5)/10*(right-left)}
+  function my(v){return bottom-(v-min)/(max-min)*(bottom-top)}
+  ctx.strokeStyle="#ddd6c7";ctx.lineWidth=1;
+  for(var i=0;i<=6;i++){var y=top+i*(bottom-top)/6;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke()}
+  ctx.beginPath();ctx.moveTo(left,my(0));ctx.lineTo(right,my(0));ctx.strokeStyle="#999";ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle="#b56a2b";ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(mx(0),top);ctx.lineTo(mx(0),bottom);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#b56a2b";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText("政策发生",mx(0),top+16);
+  ctx.strokeStyle="#2f6f5e";ctx.lineWidth=4;ctx.beginPath();
+  vals.forEach(function(v,i){var x=mx(ks[i]),y=my(v);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.stroke();
+  vals.forEach(function(v,i){
+    var x=mx(ks[i]),y=my(v),ci=0.22+0.04*Math.abs(ks[i]);
+    ctx.strokeStyle="#2f6f5e";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,my(v-ci));ctx.lineTo(x,my(v+ci));ctx.stroke();
+    ctx.fillStyle=ks[i]<0?"#7b4b9a":"#2f6f5e";ctx.beginPath();ctx.arc(x,y,5.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#5f6368";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(ks[i],x,bottom+24);
+  });
+  ctx.fillStyle="#202124";ctx.font="15px sans-serif";ctx.textAlign="center";ctx.fillText("相对时间：政策前为负，政策发生为 0，政策后为正；-1 是基准期。",450,335);
+}
+["pre","jump","grow"].forEach(function(id){$(id).addEventListener("input",drawEvent)})
+drawEvent()
+</script>
+</body>
+</html>
